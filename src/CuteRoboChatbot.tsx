@@ -12,10 +12,12 @@ import {
   Sparkles,
   Volume2,
   RefreshCw,
+  Compass,
 } from "lucide-react";
 import {
   buildRoboFallbackReply,
   SIMPLE_WORD_GLOSSARY,
+  APP_FEATURES_GUIDE,
 } from "./fallbackData";
 
 interface ChatMessage {
@@ -109,7 +111,6 @@ export function CuteRoboAvatar({
           </>
         ) : (
           <>
-            {/* Happy curved/sparkling eyes */}
             <circle cx="38" cy="45" r="6" fill="#2DD4BF" />
             <circle cx="62" cy="45" r="6" fill="#2DD4BF" />
             <circle cx="36" cy="43" r="2.2" fill="#FFFFFF" />
@@ -118,8 +119,22 @@ export function CuteRoboAvatar({
         )}
 
         {/* Rosy Cheeks */}
-        <ellipse cx="29" cy="54" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.85" />
-        <ellipse cx="71" cy="54" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.85" />
+        <ellipse
+          cx="29"
+          cy="54"
+          rx="4.5"
+          ry="2.5"
+          fill="#FB7185"
+          opacity="0.85"
+        />
+        <ellipse
+          cx="71"
+          cy="54"
+          rx="4.5"
+          ry="2.5"
+          fill="#FB7185"
+          opacity="0.85"
+        />
 
         {/* Cute Happy Smile on Visor */}
         <path
@@ -155,19 +170,21 @@ export default function CuteRoboChatbot({
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [inputVal, setInputVal] = useState<string>("");
   const [isSending, setIsSending] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<"chat" | "dictionary">("chat");
+  const [activeTab, setActiveTab] = useState<
+    "chat" | "app_guide" | "dictionary"
+  >("chat");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome-1",
       sender: "robo",
-      text: "Beep-boop! Hi friend! I'm Bibo, your friendly robot helper! 🤖\n\nAsk me the meaning of any difficult word (like 'syllabus', 'rubric', 'mitigating', or 'extension') or any doubt you have about sending your message!",
+      text: "Beep-boop! Hi friend! I'm Bibo, your friendly robot helper! 🤖\n\nI can:\n• Show you **how to use this app** and explain **how every feature is useful for you**\n• Explain **difficult words** in plain, everyday language\n• Clear up any **doubts** about your message!",
     },
   ]);
   const [suggestions, setSuggestions] = useState<string[]>([
+    "How do I use this app step-by-step?",
+    "How is each feature useful for me?",
     "What does 'syllabus' mean?",
-    "What does 'rubric' mean?",
-    "Should I say 'sorry' in my email?",
-    "What if my professor is strict?",
+    "How does Auto-Detect Language work?",
   ]);
 
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -178,12 +195,18 @@ export default function CuteRoboChatbot({
     }
   }, [messages, isOpen]);
 
-  // If the user clicked a difficult word chip in the main UI, open Bibo and explain it immediately
+  // If the user clicked a difficult word or feature trigger in the main UI, open Bibo and explain it immediately
   useEffect(() => {
     if (externalWordTrigger) {
       setIsOpen(true);
-      setActiveTab("chat");
-      handleSendQuestion(`What does "${externalWordTrigger}" mean in simple words?`);
+      if (externalWordTrigger === "__OPEN_APP_GUIDE__") {
+        setActiveTab("app_guide");
+      } else {
+        setActiveTab("chat");
+        handleSendQuestion(
+          `What does "${externalWordTrigger}" mean in simple words?`
+        );
+      }
       if (onClearExternalTrigger) {
         onClearExternalTrigger();
       }
@@ -191,12 +214,15 @@ export default function CuteRoboChatbot({
   }, [externalWordTrigger]);
 
   const handleSendQuestion = async (questionOverride?: string) => {
-    const query = (questionOverride !== undefined ? questionOverride : inputVal).trim();
+    const query = (
+      questionOverride !== undefined ? questionOverride : inputVal
+    ).trim();
     if (!query) return;
 
     if (questionOverride === undefined) {
       setInputVal("");
     }
+    setActiveTab("chat");
 
     const userMsg: ChatMessage = {
       id: `u-${Date.now()}`,
@@ -283,7 +309,7 @@ export default function CuteRoboChatbot({
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end">
       {/* Expanded Chat Window */}
       {isOpen && (
-        <div className="mb-3 w-[350px] sm:w-[390px] bg-white rounded-2xl border-2 border-teal-700 shadow-xl overflow-hidden flex flex-col">
+        <div className="mb-3 w-[360px] sm:w-[410px] bg-white rounded-2xl border-2 border-teal-700 shadow-xl overflow-hidden flex flex-col">
           {/* Cute Robo Header */}
           <div className="bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -291,12 +317,12 @@ export default function CuteRoboChatbot({
               <div>
                 <div className="flex items-center gap-1.5">
                   <h3 className="font-display text-sm font-bold text-white">
-                    Bibo the Word &amp; Doubt Buddy
+                    Bibo: App Guide &amp; Word Buddy
                   </h3>
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 </div>
                 <p className="text-[11px] text-teal-200">
-                  Explains hard words &amp; clears email doubts simply!
+                  How to use features, clear doubts &amp; simple word meanings!
                 </p>
               </div>
             </div>
@@ -310,35 +336,109 @@ export default function CuteRoboChatbot({
             </button>
           </div>
 
-          {/* Mode Switcher inside Bibo: Ask Any Doubt vs. Easy Word Dictionary */}
-          <div className="grid grid-cols-2 bg-slate-100 p-1 border-b border-slate-200 text-xs font-semibold">
+          {/* 3-Tab Switcher inside Bibo: Ask Doubts | App Guide & Features | Hard Words */}
+          <div className="grid grid-cols-3 bg-slate-100 p-1 border-b border-slate-200 text-[11px] font-semibold">
             <button
               type="button"
               onClick={() => setActiveTab("chat")}
-              className={`py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+              className={`py-1.5 rounded-md flex items-center justify-center gap-1 transition-colors cursor-pointer ${
                 activeTab === "chat"
                   ? "bg-white text-teal-900 shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <HelpCircle className="w-3.5 h-3.5 text-teal-700" />
-              <span>Ask Bibo a Doubt</span>
+              <HelpCircle className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+              <span>Ask Doubts</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("app_guide")}
+              className={`py-1.5 rounded-md flex items-center justify-center gap-1 transition-colors cursor-pointer ${
+                activeTab === "app_guide"
+                  ? "bg-white text-teal-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+              <span>App Guide</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("dictionary")}
-              className={`py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+              className={`py-1.5 rounded-md flex items-center justify-center gap-1 transition-colors cursor-pointer ${
                 activeTab === "dictionary"
                   ? "bg-white text-teal-900 shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <BookOpen className="w-3.5 h-3.5 text-teal-700" />
-              <span>Hard Words Meanings</span>
+              <BookOpen className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+              <span>Hard Words</span>
             </button>
           </div>
 
-          {activeTab === "dictionary" ? (
+          {activeTab === "app_guide" ? (
+            /* Interactive Feature Guide: How to Use the App & Why Each Feature Is Useful */
+            <div className="p-4 max-h-[380px] overflow-y-auto space-y-3 bg-slate-50">
+              <div className="p-3 rounded-xl bg-teal-900 text-white space-y-1">
+                <p className="text-xs font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-teal-300" />
+                  <span>How to Use &ldquo;Say It Right&rdquo; &amp; Why It Helps You</span>
+                </p>
+                <p className="text-[11px] text-teal-100 leading-relaxed">
+                  Click any feature below to hear Bibo explain it out loud or ask a follow-up question!
+                </p>
+              </div>
+
+              {APP_FEATURES_GUIDE.map((feat) => (
+                <div
+                  key={feat.id}
+                  className="p-3 rounded-xl bg-white border border-slate-200 space-y-1.5"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-xs font-bold text-slate-900">
+                      {feat.title}
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        speakRoboText(
+                          `${feat.title}. How to use: ${feat.howToUse}. Why it is useful: ${feat.whyUseful}`
+                        )
+                      }
+                      className="text-[11px] text-teal-700 hover:underline flex items-center gap-1 shrink-0 cursor-pointer"
+                    >
+                      <Volume2 className="w-3.5 h-3.5" />
+                      <span>Listen</span>
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-700 leading-relaxed">
+                    <strong className="text-slate-900">How to use:</strong>{" "}
+                    {feat.howToUse}
+                  </p>
+                  <p className="text-xs text-teal-950 bg-teal-50/70 p-2 rounded-lg leading-relaxed">
+                    <strong>Why it&apos;s useful for you:</strong>{" "}
+                    {feat.whyUseful}
+                  </p>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[10px] text-slate-500">
+                      <strong>Best for:</strong> {feat.bestForWho}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSendQuestion(
+                          `Can you tell me more about how "${feat.title}" helps me?`
+                        )
+                      }
+                      className="text-[11px] font-semibold text-teal-700 hover:underline cursor-pointer"
+                    >
+                      Ask Bibo about this →
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : activeTab === "dictionary" ? (
             /* Quick One-Tap Difficult Words Dictionary for Kids, Seniors & Students */
             <div className="p-4 max-h-[380px] overflow-y-auto space-y-2.5 bg-slate-50">
               <p className="text-xs text-slate-600 mb-2">
@@ -466,16 +566,16 @@ export default function CuteRoboChatbot({
                   type="text"
                   value={inputVal}
                   onChange={(e) => setInputVal(e.target.value)}
-                  placeholder="Type a hard word or ask a doubt..."
-                  className="flex-1 text-xs rounded-xl border border-slate-300 px-3 py-2 text-slate-900 focus:border-teal-700 focus:outline-none"
+                  placeholder="Ask how a feature works, a word meaning, or any doubt..."
+                  className="flex-1 rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-700 focus:outline-none"
                 />
                 <button
                   type="submit"
                   disabled={isSending || !inputVal.trim()}
-                  className="p-2 rounded-xl bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white transition-colors cursor-pointer"
+                  className="p-2 rounded-xl bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white transition-colors shrink-0 cursor-pointer"
                   aria-label="Send question to Bibo"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  <Send className="w-4 h-4" />
                 </button>
               </form>
             </>
@@ -483,21 +583,23 @@ export default function CuteRoboChatbot({
         </div>
       )}
 
-      {/* Floating Cute Robo Launcher Button at Bottom-Right Corner */}
+      {/* Floating Cute Robot Launcher Button at Bottom-Right Corner */}
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="group flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-white pl-2.5 pr-4 py-2 rounded-full shadow-lg border-2 border-teal-500 transition-transform hover:scale-[1.02] cursor-pointer"
+        className="group flex items-center gap-3 bg-slate-900 hover:bg-slate-800 text-white pl-3 pr-4 py-2.5 rounded-full shadow-lg border-2 border-teal-500 transition-all cursor-pointer"
       >
         <CuteRoboAvatar size="md" isThinking={isSending} />
         <div className="text-left">
-          <div className="flex items-center gap-1 text-xs font-bold text-white whitespace-nowrap">
-            <span>Ask Bibo Robo</span>
+          <div className="flex items-center gap-1.5">
+            <span className="font-display text-xs font-bold tracking-tight text-white">
+              {isOpen ? "Close Bibo Robo" : "Ask Bibo Robo 🤖"}
+            </span>
             <Sparkles className="w-3.5 h-3.5 text-teal-300" />
           </div>
-          <p className="text-[10px] text-teal-200 whitespace-nowrap">
-            Word Meanings &amp; Doubts
-          </p>
+          <span className="block text-[10px] text-teal-200">
+            App Guide · Feature Help · Word Meanings
+          </span>
         </div>
       </button>
     </div>

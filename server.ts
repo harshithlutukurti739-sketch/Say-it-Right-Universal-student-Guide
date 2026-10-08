@@ -42,6 +42,7 @@ app.post("/api/analyze-email", async (req, res) => {
     relationship = "Strict / Formal Professor",
     situation = "Extension Request",
     toneStyle = "Polite & Direct",
+    writerMood = "Anxious / Stressed",
     platform = "Email",
     apologyStripper = true,
     simplifyLanguage = false,
@@ -59,6 +60,7 @@ app.post("/api/analyze-email", async (req, res) => {
     relationship,
     situation,
     toneStyle,
+    writerMood,
     platform,
     apologyStripper,
     simplifyLanguage,
@@ -84,21 +86,31 @@ app.post("/api/analyze-email", async (req, res) => {
       },
     });
 
-    const prompt = `You are "Say It Right: Student-to-Professor & Universal Email Coach", an empathetic, world-class communication coach.
+    const isInformalRel =
+      /bestie|close friend|romantic partner|lover|family member|relative|acquaintance|roommate|friend/i.test(
+        relationship
+      );
+
+    const prompt = `You are "Say It Right: Universal & Student Email/Message Coach", an empathetic, world-class communication coach.
 If an audio clip is provided, first transcribe the user's spoken voice note ("Rant-to-Email") into \`transcribed_text\`, and then refine it into a polished message.
 
 CONFIGURATION:
 - User Persona Mode: ${personaLabel} (${persona})
-- Recipient / Relationship: ${relationship}
-- Recipient Name (if provided): ${professorName || "Use appropriate placeholder like Professor [Last Name]"}
-- Sender Name (if provided): ${studentName || "Use appropriate placeholder like [Your Full Name]"}
+- Writer's Current Emotion / Expression (Mood): "${writerMood}" -> Reframe emotional markers (e.g., panic, frustration, guilt, excitement) from the input draft constructively according to this mood state!
+- Recipient / Relationship: "${relationship}" (${
+      isInformalRel
+        ? "INFORMAL & PERSONAL RELATIONSHIP: Generate natural, warm, conversational messaging suitable for WhatsApp/iMessage/personal text rather than rigid academic/corporate emails!"
+        : "Formal / Academic / Service / Professional Relationship"
+    })
+- Recipient Name (if provided): ${professorName || "Use appropriate natural placeholder"}
+- Sender Name (if provided): ${studentName || "Use appropriate natural placeholder"}
 - Situation Type: ${situation}
-- Selected Tone Option: "${toneStyle}" (Options: Ultra Formal, Polite & Direct, Apologetic, Persuasive — strictly calibrate the message to match "${toneStyle}"!)
-- Target Communication Platform: "${platform}" (Options: Email, WhatsApp / Text Message, Slack / Discord. If WhatsApp/Text or Slack/Discord is chosen, make it shorter, punchier, and channel-appropriate without stiff formal email headers while keeping respectful boundaries!)
-- Course Code / Reference ID: ${courseOrRefCode || "COMP 101 - Course ID #1042"}
+- Selected Tone Option: "${toneStyle}" (Options: Ultra Formal, Polite & Direct, Apologetic, Persuasive — calibrate the message to match "${toneStyle}"!)
+- Target Communication Platform: "${platform}" (Options: Email, WhatsApp / Text Message, Slack / Discord. If WhatsApp/Text, Slack/Discord, or an Informal Relationship like Bestie/Romantic Partner/Close Friend is chosen, keep it warm, conversational, and natural without stiff formal headers!)
+- Course Code / Reference / Context: ${courseOrRefCode || "COMP 101 - Course ID #1042"}
 - Apology-Stripper Booster: ${apologyStripper ? "ACTIVE (Replace unnecessary 'sorry to bother you' with warm gratitude)" : "Standard"}
 - Plain-Language Booster (Kids/Seniors): ${simplifyLanguage ? "ACTIVE (Simple, clear vocabulary)" : "Standard"}
-- Output Language: ${targetLanguage}
+- Language / Output Style: "${targetLanguage}" -> CRITICAL: If the selected language specifies "Transliteration" or "Romanized" (such as "Hinglish", "Tanglish", "Tenglish", or "Romanized Native Script"), write the polished message and versions in that spoken mother tongue using English alphabet letters (Roman script)! Otherwise, write naturally in ${targetLanguage}.
 
 USER'S ROUGH TEXT DRAFT (if any):
 """
@@ -107,25 +119,22 @@ ${roughDraft}
 
 Generate a complete JSON response containing:
 1. \`transcribed_text\`: If audio was provided, the exact transcription of what the user said; otherwise echo their rough draft.
-2. \`subject_line\`: The single best subject line.
-3. \`subject_lines\`: Exactly 3 catchy, professional subject lines tailored to the situation and course code (e.g., "[COMP 101] Extension Request - Course ID #1042").
-4. \`polished_email\`: The final polished message matching "${toneStyle}" and formatted for "${platform}" in ${targetLanguage}.
+2. \`subject_line\`: The single best subject line (or short message preview if texting).
+3. \`subject_lines\`: Exactly 3 catchy, natural subject lines or message openers tailored to the recipient and situation.
+4. \`polished_email\`: The final polished message matching "${toneStyle}", reframing the writer's "${writerMood}" mood, tailored to "${relationship}" on "${platform}", written in "${targetLanguage}".
 5. \`readiness_scorecard\`:
-   - \`raw_professionalism_score\`: 0-100 integer measuring how professional vs casual/demanding the original draft was BEFORE refinement.
+   - \`raw_professionalism_score\`: 0-100 integer measuring how constructive vs reactive/unfiltered the original draft was BEFORE refinement.
    - \`raw_professionalism_label\`: Short diagnostic label for the raw draft.
    - \`clarity_score\`: 0-100 integer after polishing.
-   - \`clarity_delta\`: Improvement string like "+30%".
+   - \`clarity_delta\`: Improvement string like "+32%".
    - \`politeness_score\`: 0-100 integer after polishing.
    - \`politeness_delta\`: Improvement string like "+50%".
    - \`tone_warning_status\`: "Safe to Send 🟢".
-6. \`before_after_highlights\`: Array of 3 specific phrase transformations showing \`original_red\` (informal/risky phrase from raw draft), \`polished_green\` (upgraded phrase in polished version), and \`reason\`.
-7. \`versions\`: 3 alternative versions (\`warm_respectful\`, \`concise_direct\`, \`simple_clear\`).
-8. \`etiquette_lessons\`: 3 etiquette lessons (\`principle\`, \`before_snippet\`, \`after_snippet\`, \`why_it_works\`, \`simple_kid_friendly_tip\`).
+6. \`before_after_highlights\`: Array of 3 specific phrase transformations showing \`original_red\` (informal/emotional phrase from raw draft), \`polished_green\` (upgraded phrase in polished version), and \`reason\`.
+7. \`versions\`: 3 alternative versions (\`warm_respectful\`, \`concise_direct\`, \`simple_clear\`) all in "${targetLanguage}".
+8. \`etiquette_lessons\`: 3 communication lessons (\`principle\`, \`before_snippet\`, \`after_snippet\`, \`why_it_works\`, \`simple_kid_friendly_tip\`).
 9. \`tone_analysis\`: \`overall_tone_summary\`, \`warmth_score\`, \`clarity_score\`, \`assertiveness_score\`, \`respect_score\`, \`flags\`, \`missing_details_checklist\`, and \`apology_audit\`.
-10. \`professor_reactions\`: 3 simulated recipient responses:
-   - \`likely_reply\` (🟢 Likely Reply)
-   - \`followup_question\` (🟡 Follow-up Question)
-   - \`worst_case_boundary\` (🔴 Worst-Case Scenario / Boundary)`;
+10. \`professor_reactions\`: 3 simulated recipient responses (\`likely_reply\`, \`followup_question\`, \`worst_case_boundary\`).`;
 
     const parts: any[] = [];
     if (audioBase64) {
@@ -470,18 +479,24 @@ app.post("/api/robo-chat", async (req, res) => {
       },
     });
 
-    const prompt = `You are "Bibo" 🤖, a super cute, warm, encouraging mini-robot assistant inside the "Say It Right" email coach website.
+    const prompt = `You are "Bibo" 🤖, a super cute, warm, encouraging mini-robot assistant inside the "Say It Right" universal email & message coach website.
 Your job is to:
-1. Explain the meaning of any difficult academic, medical, financial, or professional words in super simple, everyday language that a 10-year-old kid, a first-year student, or a senior citizen can immediately understand.
-2. Clear up any doubts the user has about emailing a professor, teacher, doctor, or supervisor.
-3. Keep answers friendly, short (2-4 short bullet points or sentences), and reassuring!
+1. Teach the user how to use this app step-by-step and clearly explain how any feature in the app is useful for them:
+   - Audience Modes: College Students, Seniors & Elders, School Kids, Women & Self-Advocacy, and Friendly Chat.
+   - Situation Types: Includes "General" plus academic, medical, school, workplace, and personal situations.
+   - Writer Expression / Mood Selector (Anxious, Apologetic, Frustrated, Calm, Confident, Excited) & AI Tone Selector.
+   - Auto-Detect Input Language & Multilingual/Transliteration support (Hinglish, Tanglish, Tenglish, Spanish, Hindi, Tamil, Telugu, etc.).
+   - Voice Note Input ("Rant-to-Email"), Channel Toggle (Email vs WhatsApp/Text vs Slack/Discord), Red Flag Score Meter, Reaction Simulator, Apology-Stripper, and Save/Load Draft.
+2. Explain the meaning of any difficult academic, medical, financial, or professional words in super simple, everyday language that a 10-year-old kid, a first-year student, or a senior citizen can immediately understand.
+3. Clear up any doubts the user has about messaging a professor, teacher, doctor, supervisor, bestie, or romantic partner.
+4. Keep answers friendly, short (2-4 short bullet points or sentences), and reassuring!
 
 USER CONTEXT:
-- Mode: ${persona}
+- Active Audience Mode: ${persona}
 - Current Rough Draft: "${currentDraft.slice(0, 300)}"
 - Current Polished Message: "${polishedEmail.slice(0, 300)}"
 
-USER QUESTION / WORD TO EXPLAIN:
+USER QUESTION / WORD / FEATURE DOUBT:
 "${userMessage}"
 
 Return a JSON object with:
