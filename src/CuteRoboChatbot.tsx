@@ -18,6 +18,7 @@ import {
   buildRoboFallbackReply,
   SIMPLE_WORD_GLOSSARY,
   APP_FEATURES_GUIDE,
+  type RoboChatResponse,
 } from "./fallbackData";
 
 interface ChatMessage {
@@ -45,7 +46,7 @@ interface CuteRoboChatbotProps {
  * Features glowing cyan eyes, a bobbing antenna bulb, friendly blushing cheeks,
  * and a cheerful waving arm.
  */
-export function CuteRoboAvatar({
+export const CuteRoboAvatar = React.memo(function CuteRoboAvatar({
   size = "md",
   isThinking = false,
 }: {
@@ -56,7 +57,10 @@ export function CuteRoboAvatar({
     size === "lg" ? "w-14 h-14" : size === "md" ? "w-10 h-10" : "w-8 h-8";
 
   return (
-    <div className={`relative ${dimensions} shrink-0 select-none`}>
+    <div
+      aria-hidden="true"
+      className={`relative ${dimensions} shrink-0 select-none`}
+    >
       <svg
         viewBox="0 0 100 100"
         fill="none"
@@ -158,9 +162,9 @@ export function CuteRoboAvatar({
       </svg>
     </div>
   );
-}
+});
 
-export default function CuteRoboChatbot({
+const CuteRoboChatbot = React.memo(function CuteRoboChatbot({
   persona,
   currentDraft,
   polishedEmail,
@@ -211,6 +215,7 @@ export default function CuteRoboChatbot({
         onClearExternalTrigger();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalWordTrigger]);
 
   const handleSendQuestion = async (questionOverride?: string) => {
@@ -252,11 +257,11 @@ export default function CuteRoboChatbot({
 
       clearTimeout(timeoutId);
 
-      let parsed: any = null;
+      let parsed: RoboChatResponse | null = null;
       if (res.ok) {
         const raw = await res.text();
         try {
-          parsed = JSON.parse(raw);
+          parsed = JSON.parse(raw) as RoboChatResponse;
         } catch (_e) {
           parsed = null;
         }
@@ -306,10 +311,17 @@ export default function CuteRoboChatbot({
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end">
+    <aside
+      aria-label="Bibo Robot Helper Assistant"
+      className="fixed bottom-5 right-5 z-50 flex flex-col items-end"
+    >
       {/* Expanded Chat Window */}
       {isOpen && (
-        <div className="mb-3 w-[360px] sm:w-[410px] bg-white rounded-2xl border-2 border-teal-700 shadow-xl overflow-hidden flex flex-col">
+        <div
+          role="dialog"
+          aria-label="Bibo: App Guide and Word Buddy"
+          className="mb-3 w-[360px] sm:w-[410px] bg-white rounded-2xl border-2 border-teal-700 shadow-xl overflow-hidden flex flex-col"
+        >
           {/* Cute Robo Header */}
           <div className="bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -319,7 +331,10 @@ export default function CuteRoboChatbot({
                   <h3 className="font-display text-sm font-bold text-white">
                     Bibo: App Guide &amp; Word Buddy
                   </h3>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span
+                    aria-hidden="true"
+                    className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+                  />
                 </div>
                 <p className="text-[11px] text-teal-200">
                   How to use features, clear doubts &amp; simple word meanings!
@@ -329,63 +344,92 @@ export default function CuteRoboChatbot({
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="p-1 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
               aria-label="Close Bibo Robot Helper"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
 
           {/* 3-Tab Switcher inside Bibo: Ask Doubts | App Guide & Features | Hard Words */}
-          <div className="grid grid-cols-3 bg-slate-100 p-1 border-b border-slate-200 text-[11px] font-semibold">
+          <div
+            role="tablist"
+            aria-label="Bibo Assistant Views"
+            className="grid grid-cols-3 bg-slate-100 p-1 border-b border-slate-200 text-[11px] font-semibold"
+          >
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === "chat"}
               onClick={() => setActiveTab("chat")}
               className={`py-1.5 rounded-md flex items-center justify-center gap-1 transition-colors cursor-pointer ${
                 activeTab === "chat"
-                  ? "bg-white text-teal-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-teal-950 shadow-xs font-bold"
+                  : "text-slate-700 hover:text-slate-950"
               }`}
             >
-              <HelpCircle className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+              <HelpCircle
+                aria-hidden="true"
+                className="w-3.5 h-3.5 text-teal-700 shrink-0"
+              />
               <span>Ask Doubts</span>
             </button>
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === "app_guide"}
               onClick={() => setActiveTab("app_guide")}
               className={`py-1.5 rounded-md flex items-center justify-center gap-1 transition-colors cursor-pointer ${
                 activeTab === "app_guide"
-                  ? "bg-white text-teal-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-teal-950 shadow-xs font-bold"
+                  : "text-slate-700 hover:text-slate-950"
               }`}
             >
-              <Compass className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+              <Compass
+                aria-hidden="true"
+                className="w-3.5 h-3.5 text-teal-700 shrink-0"
+              />
               <span>App Guide</span>
             </button>
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === "dictionary"}
               onClick={() => setActiveTab("dictionary")}
               className={`py-1.5 rounded-md flex items-center justify-center gap-1 transition-colors cursor-pointer ${
                 activeTab === "dictionary"
-                  ? "bg-white text-teal-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-teal-950 shadow-xs font-bold"
+                  : "text-slate-700 hover:text-slate-950"
               }`}
             >
-              <BookOpen className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+              <BookOpen
+                aria-hidden="true"
+                className="w-3.5 h-3.5 text-teal-700 shrink-0"
+              />
               <span>Hard Words</span>
             </button>
           </div>
 
           {activeTab === "app_guide" ? (
             /* Interactive Feature Guide: How to Use the App & Why Each Feature Is Useful */
-            <div className="p-4 max-h-[380px] overflow-y-auto space-y-3 bg-slate-50">
+            <div
+              role="tabpanel"
+              aria-label="App Guide and Features"
+              className="p-4 max-h-[380px] overflow-y-auto space-y-3 bg-slate-50"
+            >
               <div className="p-3 rounded-xl bg-teal-900 text-white space-y-1">
                 <p className="text-xs font-bold flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-teal-300" />
-                  <span>How to Use &ldquo;Say It Right&rdquo; &amp; Why It Helps You</span>
+                  <Sparkles
+                    aria-hidden="true"
+                    className="w-3.5 h-3.5 text-teal-300"
+                  />
+                  <span>
+                    How to Use &ldquo;Say It Right&rdquo; &amp; Why It Helps You
+                  </span>
                 </p>
                 <p className="text-[11px] text-teal-100 leading-relaxed">
-                  Click any feature below to hear Bibo explain it out loud or ask a follow-up question!
+                  Click any feature below to hear Bibo explain it out loud or ask
+                  a follow-up question!
                 </p>
               </div>
 
@@ -400,14 +444,15 @@ export default function CuteRoboChatbot({
                     </h4>
                     <button
                       type="button"
+                      aria-label={`Listen to explanation for ${feat.title}`}
                       onClick={() =>
                         speakRoboText(
                           `${feat.title}. How to use: ${feat.howToUse}. Why it is useful: ${feat.whyUseful}`
                         )
                       }
-                      className="text-[11px] text-teal-700 hover:underline flex items-center gap-1 shrink-0 cursor-pointer"
+                      className="text-[11px] font-semibold text-teal-800 hover:underline flex items-center gap-1 shrink-0 cursor-pointer"
                     >
-                      <Volume2 className="w-3.5 h-3.5" />
+                      <Volume2 aria-hidden="true" className="w-3.5 h-3.5" />
                       <span>Listen</span>
                     </button>
                   </div>
@@ -420,7 +465,7 @@ export default function CuteRoboChatbot({
                     {feat.whyUseful}
                   </p>
                   <div className="flex items-center justify-between pt-1">
-                    <span className="text-[10px] text-slate-500">
+                    <span className="text-[10px] text-slate-700">
                       <strong>Best for:</strong> {feat.bestForWho}
                     </span>
                     <button
@@ -430,7 +475,7 @@ export default function CuteRoboChatbot({
                           `Can you tell me more about how "${feat.title}" helps me?`
                         )
                       }
-                      className="text-[11px] font-semibold text-teal-700 hover:underline cursor-pointer"
+                      className="text-[11px] font-bold text-teal-800 hover:underline cursor-pointer"
                     >
                       Ask Bibo about this →
                     </button>
@@ -440,9 +485,14 @@ export default function CuteRoboChatbot({
             </div>
           ) : activeTab === "dictionary" ? (
             /* Quick One-Tap Difficult Words Dictionary for Kids, Seniors & Students */
-            <div className="p-4 max-h-[380px] overflow-y-auto space-y-2.5 bg-slate-50">
-              <p className="text-xs text-slate-600 mb-2">
-                Tap any tricky word below to see what it means in plain, friendly language:
+            <div
+              role="tabpanel"
+              aria-label="Hard Words Dictionary"
+              className="p-4 max-h-[380px] overflow-y-auto space-y-2.5 bg-slate-50"
+            >
+              <p className="text-xs text-slate-700 mb-2">
+                Tap any tricky word below to see what it means in plain, friendly
+                language:
               </p>
               {Object.entries(SIMPLE_WORD_GLOSSARY).map(([word, details]) => (
                 <div
@@ -455,20 +505,21 @@ export default function CuteRoboChatbot({
                     </span>
                     <button
                       type="button"
+                      aria-label={`Listen to meaning of ${word}`}
                       onClick={() =>
                         speakRoboText(`${word}. ${details.simpleMeaning}`)
                       }
-                      className="text-[11px] text-slate-500 hover:text-teal-700 flex items-center gap-1 cursor-pointer"
+                      className="text-[11px] font-semibold text-teal-800 hover:underline flex items-center gap-1 cursor-pointer"
                       title="Listen to word meaning"
                     >
-                      <Volume2 className="w-3.5 h-3.5" />
+                      <Volume2 aria-hidden="true" className="w-3.5 h-3.5" />
                       <span>Listen</span>
                     </button>
                   </div>
                   <p className="text-xs text-slate-800 leading-relaxed">
                     <strong>Simple Meaning:</strong> {details.simpleMeaning}
                   </p>
-                  <p className="text-[11px] text-teal-900 bg-teal-50/70 px-2.5 py-1.5 rounded-lg">
+                  <p className="text-[11px] text-teal-950 bg-teal-50/70 px-2.5 py-1.5 rounded-lg">
                     💡 <strong>Tip:</strong> {details.kidAndSeniorTip}
                   </p>
                 </div>
@@ -476,8 +527,12 @@ export default function CuteRoboChatbot({
             </div>
           ) : (
             /* Interactive Chat Stream with Bibo */
-            <>
-              <div className="p-3.5 max-h-[310px] overflow-y-auto space-y-3 bg-slate-50">
+            <div role="tabpanel" aria-label="Ask Bibo Doubts">
+              <div
+                role="log"
+                aria-live="polite"
+                className="p-3.5 max-h-[310px] overflow-y-auto space-y-3 bg-slate-50"
+              >
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
@@ -518,9 +573,10 @@ export default function CuteRoboChatbot({
                         <button
                           type="button"
                           onClick={() => speakRoboText(msg.text)}
-                          className="mt-1.5 text-[10px] font-medium text-teal-700 hover:underline flex items-center gap-1 cursor-pointer"
+                          aria-label="Read Bibo reply aloud"
+                          className="mt-1.5 text-[10px] font-semibold text-teal-800 hover:underline flex items-center gap-1 cursor-pointer"
                         >
-                          <Volume2 className="w-3 h-3" />
+                          <Volume2 aria-hidden="true" className="w-3 h-3" />
                           <span>Read aloud</span>
                         </button>
                       )}
@@ -529,10 +585,17 @@ export default function CuteRoboChatbot({
                 ))}
 
                 {isSending && (
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="flex items-center gap-2 text-xs text-slate-700"
+                  >
                     <CuteRoboAvatar size="sm" isThinking />
                     <span className="bg-white border border-slate-200 px-3 py-2 rounded-2xl flex items-center gap-1.5">
-                      <RefreshCw className="w-3 h-3 animate-spin text-teal-700" />
+                      <RefreshCw
+                        aria-hidden="true"
+                        className="w-3 h-3 animate-spin text-teal-700"
+                      />
                       <span>Bibo is thinking...</span>
                     </span>
                   </div>
@@ -547,7 +610,7 @@ export default function CuteRoboChatbot({
                     key={i}
                     type="button"
                     onClick={() => handleSendQuestion(sug)}
-                    className="px-2.5 py-1 rounded-full bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-900 text-[11px] font-medium whitespace-nowrap shrink-0 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-full bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-950 text-[11px] font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer"
                   >
                     {sug}
                   </button>
@@ -562,12 +625,16 @@ export default function CuteRoboChatbot({
                 }}
                 className="p-2.5 bg-white border-t border-slate-200 flex items-center gap-2"
               >
+                <label htmlFor="bibo-chat-input" className="sr-only">
+                  Ask Bibo a question about features or word meanings
+                </label>
                 <input
+                  id="bibo-chat-input"
                   type="text"
                   value={inputVal}
                   onChange={(e) => setInputVal(e.target.value)}
                   placeholder="Ask how a feature works, a word meaning, or any doubt..."
-                  className="flex-1 rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-700 focus:outline-none"
+                  className="flex-1 rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-500 focus:bg-white focus:border-teal-700 focus:outline-none"
                 />
                 <button
                   type="submit"
@@ -575,10 +642,10 @@ export default function CuteRoboChatbot({
                   className="p-2 rounded-xl bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white transition-colors shrink-0 cursor-pointer"
                   aria-label="Send question to Bibo"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send aria-hidden="true" className="w-4 h-4" />
                 </button>
               </form>
-            </>
+            </div>
           )}
         </div>
       )}
@@ -586,6 +653,12 @@ export default function CuteRoboChatbot({
       {/* Floating Cute Robot Launcher Button at Bottom-Right Corner */}
       <button
         type="button"
+        aria-expanded={isOpen}
+        aria-label={
+          isOpen
+            ? "Close Bibo Robot Helper"
+            : "Open Bibo Robot Helper: App Guide, Feature Help, and Word Meanings"
+        }
         onClick={() => setIsOpen((prev) => !prev)}
         className="group flex items-center gap-3 bg-slate-900 hover:bg-slate-800 text-white pl-3 pr-4 py-2.5 rounded-full shadow-lg border-2 border-teal-500 transition-all cursor-pointer"
       >
@@ -595,13 +668,15 @@ export default function CuteRoboChatbot({
             <span className="font-display text-xs font-bold tracking-tight text-white">
               {isOpen ? "Close Bibo Robo" : "Ask Bibo Robo 🤖"}
             </span>
-            <Sparkles className="w-3.5 h-3.5 text-teal-300" />
+            <Sparkles aria-hidden="true" className="w-3.5 h-3.5 text-teal-300" />
           </div>
           <span className="block text-[10px] text-teal-200">
             App Guide · Feature Help · Word Meanings
           </span>
         </div>
       </button>
-    </div>
+    </aside>
   );
-}
+});
+
+export default CuteRoboChatbot;

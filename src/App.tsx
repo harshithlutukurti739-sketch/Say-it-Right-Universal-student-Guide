@@ -3,7 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import {
   Send,
   Copy,
@@ -12,8 +18,6 @@ import {
   VolumeX,
   Mic,
   MicOff,
-  BookOpen,
-  AlertTriangle,
   Download,
   RefreshCw,
   GraduationCap,
@@ -22,8 +26,6 @@ import {
   ShieldCheck,
   CheckSquare,
   Square,
-  ChevronDown,
-  ChevronUp,
   Globe,
   Type as TypeIcon,
   MessageSquare,
@@ -31,10 +33,7 @@ import {
   Hash,
   FlaskConical,
   Sparkles,
-  Pin,
   ArrowRight,
-  Trash2,
-  Upload,
   UserCheck,
   Save,
   RotateCcw,
@@ -50,6 +49,9 @@ import {
   buildFallbackResponse,
   SIMPLE_WORD_GLOSSARY,
   detectInputLanguage,
+  type EmailAnalysisResult,
+  type BeforeAfterHighlight,
+  type ProfessorReactions,
 } from "./fallbackData";
 import CuteRoboChatbot from "./CuteRoboChatbot";
 import {
@@ -1770,7 +1772,8 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (data.audioBase64) {
-          const audio = new Audio(`data:audio/mp3;base64,${data.audioBase64}`);
+          const mime = data.mimeType || "audio/wav";
+          const audio = new Audio(`data:${mime};base64,${data.audioBase64}`);
           audioPlayerRef.current = audio;
           audio.onended = () => setIsSpeaking(false);
           audio.onerror = () => setIsSpeaking(false);

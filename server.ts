@@ -15,11 +15,31 @@ const PORT = 3000;
 
 app.use(express.json({ limit: "15mb" }));
 
+let cachedGenAIClient: { key: string; client: GoogleGenAI } | null = null;
+
+function getSharedGenAIClient(apiKey: string): GoogleGenAI {
+  if (cachedGenAIClient && cachedGenAIClient.key === apiKey) {
+    return cachedGenAIClient.client;
+  }
+  const client = new GoogleGenAI({
+    apiKey,
+    httpOptions: {
+      headers: {
+        "User-Agent": "aistudio-build",
+      },
+    },
+  });
+  cachedGenAIClient = { key: apiKey, client };
+  return client;
+}
+
 /**
  * Safely parses JSON from Gemini output, stripping markdown code fences if present.
  * Returns null if parsing fails so the caller can gracefully return fallback data.
  */
-function safeParseJson<T = any>(rawText: string | undefined | null): T | null {
+function safeParseJson<T = unknown>(
+  rawText: string | undefined | null
+): T | null {
   if (!rawText || typeof rawText !== "string") return null;
   try {
     const cleaned = rawText
@@ -394,6 +414,31 @@ app.post("/api/simulate-reaction", async (req, res) => {
   }
 });
 
+function pcmBase64ToWavBase64(pcmBase64: string, sampleRate = 24000): string {
+  const pcmBuffer = Buffer.from(pcmBase64, "base64");
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const byteRate = (sampleRate * numChannels * bitsPerSample) / 8;
+  const blockAlign = (numChannels * bitsPerSample) / 8;
+  const wavHeader = Buffer.alloc(44);
+
+  wavHeader.write("RIFF", 0);
+  wavHeader.writeUInt32LE(36 + pcmBuffer.length, 4);
+  wavHeader.write("WAVE", 8);
+  wavHeader.write("fmt ", 12);
+  wavHeader.writeUInt32LE(16, 16);
+  wavHeader.writeUInt16LE(1, 20);
+  wavHeader.writeUInt16LE(numChannels, 22);
+  wavHeader.writeUInt32LE(sampleRate, 24);
+  wavHeader.writeUInt32LE(byteRate, 28);
+  wavHeader.writeUInt16LE(blockAlign, 32);
+  wavHeader.writeUInt16LE(bitsPerSample, 34);
+  wavHeader.write("data", 36);
+  wavHeader.writeUInt32LE(pcmBuffer.length, 40);
+
+  return Buffer.concat([wavHeader, pcmBuffer]).toString("base64");
+}
+
 // Dedicated Gemini TTS endpoint using `gemini-3.8-flash-lite-tts`
 app.post("/api/tts", async (req, res) => {
   const { text = "", persona = "college_student" } = req.body || {};
@@ -445,9 +490,21 @@ app.post("/api/tts", async (req, res) => {
       },
     });
 
-    const base64Audio =
-      response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || null;
-    return res.status(200).json({ audioBase64: base64Audio });
+    const inlineData =
+      response.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+    if (!inlineData?.data) {
+      return res.status(200).json({ audioBase64: null });
+    }
+    const rawMime = (inlineData.mimeType || "").toLowerCase();
+    const isRawPcm =
+      !rawMime || rawMime.includes("pcm") || rawMime.includes("l16");
+    const audioBase64 = isRawPcm
+      ? pcmBase64ToWavBase64(inlineData.data, 24000)
+      : inlineData.data;
+    return res.status(200).json({
+      audioBase64,
+      mimeType: isRawPcm ? "audio/wav" : inlineData.mimeType,
+    });
   } catch (_err) {
     return res.status(200).json({ audioBase64: null });
   }

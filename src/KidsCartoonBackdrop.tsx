@@ -503,17 +503,19 @@ export const CARTOON_PICTURE_GALLERY: CartoonPicItem[] = [
   },
 ];
 
-/**
- * Full-screen fixed scrolling cartoon pictures background layer for Kids Mode
- */
-export const KidsCartoonBackdrop: React.FC = () => {
-  // Duplicate array for seamless infinite 0 -> -50% marquee loop
-  const doubledGallery = [...CARTOON_PICTURE_GALLERY, ...CARTOON_PICTURE_GALLERY];
-  const reversedGallery = [
-    ...CARTOON_PICTURE_GALLERY.slice().reverse(),
-    ...CARTOON_PICTURE_GALLERY.slice().reverse(),
-  ];
+const DOUBLED_GALLERY = [
+  ...CARTOON_PICTURE_GALLERY,
+  ...CARTOON_PICTURE_GALLERY,
+];
+const REVERSED_GALLERY = [
+  ...CARTOON_PICTURE_GALLERY.slice().reverse(),
+  ...CARTOON_PICTURE_GALLERY.slice().reverse(),
+];
 
+/**
+  * Full-screen fixed scrolling cartoon pictures background layer for Kids Mode
+  */
+export const KidsCartoonBackdrop: React.FC = React.memo(() => {
   return (
     <div
       aria-hidden="true"
@@ -526,7 +528,7 @@ export const KidsCartoonBackdrop: React.FC = () => {
       <div className="relative w-full h-full flex flex-col justify-around py-6 gap-6">
         {/* Lane 1: Scrolling Left */}
         <div className="animate-cartoon-scroll-left gap-6 px-3">
-          {doubledGallery.map((pic, index) => (
+          {DOUBLED_GALLERY.map((pic, index) => (
             <div
               key={`lane1-${pic.id}-${index}`}
               className={`w-44 shrink-0 rounded-3xl ${pic.bgClass} border-3 border-slate-900/80 shadow-[4px_4px_0px_0px_rgba(15,23,42,0.75)] p-3 flex items-center gap-3 -rotate-2`}
@@ -548,7 +550,7 @@ export const KidsCartoonBackdrop: React.FC = () => {
 
         {/* Lane 2: Scrolling Right */}
         <div className="animate-cartoon-scroll-right gap-6 px-3">
-          {reversedGallery.map((pic, index) => (
+          {REVERSED_GALLERY.map((pic, index) => (
             <div
               key={`lane2-${pic.id}-${index}`}
               className={`w-44 shrink-0 rounded-3xl ${pic.bgClass} border-3 border-slate-900/80 shadow-[4px_4px_0px_0px_rgba(15,23,42,0.75)] p-3 flex items-center gap-3 rotate-2`}
@@ -570,7 +572,7 @@ export const KidsCartoonBackdrop: React.FC = () => {
 
         {/* Lane 3: Scrolling Left */}
         <div className="animate-cartoon-scroll-left gap-6 px-3">
-          {doubledGallery.map((pic, index) => (
+          {DOUBLED_GALLERY.map((pic, index) => (
             <div
               key={`lane3-${pic.id}-${index}`}
               className={`w-44 shrink-0 rounded-3xl ${pic.bgClass} border-3 border-slate-900/80 shadow-[4px_4px_0px_0px_rgba(15,23,42,0.75)] p-3 flex items-center gap-3 -rotate-1`}
@@ -592,7 +594,7 @@ export const KidsCartoonBackdrop: React.FC = () => {
 
         {/* Lane 4: Scrolling Right */}
         <div className="animate-cartoon-scroll-right gap-6 px-3">
-          {reversedGallery.map((pic, index) => (
+          {REVERSED_GALLERY.map((pic, index) => (
             <div
               key={`lane4-${pic.id}-${index}`}
               className={`w-44 shrink-0 rounded-3xl ${pic.bgClass} border-3 border-slate-900/80 shadow-[4px_4px_0px_0px_rgba(15,23,42,0.75)] p-3 flex items-center gap-3 rotate-1`}
@@ -614,21 +616,23 @@ export const KidsCartoonBackdrop: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 /**
- * Interactive Scrolling Cartoon Picture Parade Strip inside the Kids Clubhouse
- * so kids can see and tap the scrolling cartoon pictures right inside the workspace!
- */
+  * Interactive Scrolling Cartoon Picture Parade Strip inside the Kids Clubhouse
+  * so kids can see and tap the scrolling cartoon pictures right inside the workspace!
+  */
 export const KidsCartoonParadeStrip: React.FC<{
   onTapCartoonCard: (cheer: string) => void;
-}> = ({ onTapCartoonCard }) => {
-  const doubledGallery = [...CARTOON_PICTURE_GALLERY, ...CARTOON_PICTURE_GALLERY];
-
+}> = React.memo(({ onTapCartoonCard }) => {
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-sky-300/90 via-amber-200/90 to-pink-300/90 border-3 border-slate-900 py-3 shadow-[4px_4px_0px_0px_#0f172a]">
+    <div
+      role="region"
+      aria-label="Interactive Cartoon Friends Parade"
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-sky-300/90 via-amber-200/90 to-pink-300/90 border-3 border-slate-900 py-3 shadow-[4px_4px_0px_0px_#0f172a]"
+    >
       <div className="px-4 pb-2 flex items-center justify-between">
-        <span className="text-xs font-extrabold uppercase tracking-wider text-slate-950 bg-white/90 px-2.5 py-0.5 rounded-full border-2 border-slate-900">
+        <span className="text-xs font-extrabold uppercase tracking-wider text-slate-950 bg-white/95 px-2.5 py-0.5 rounded-full border-2 border-slate-900">
           🎠 Live Cartoon Parade! (Tap Any Moving Picture for +1 Gold Star ⭐)
         </span>
         <span className="text-[11px] font-extrabold text-slate-900 hidden sm:inline">
@@ -637,30 +641,39 @@ export const KidsCartoonParadeStrip: React.FC<{
       </div>
 
       <div className="animate-cartoon-scroll-fast gap-4 px-4">
-        {doubledGallery.map((pic, index) => (
-          <button
-            key={`parade-${pic.id}-${index}`}
-            type="button"
-            onClick={() => onTapCartoonCard(pic.cheerMessage)}
-            className={`w-48 shrink-0 rounded-2xl ${pic.bgClass} hover:scale-105 transition-transform border-3 border-slate-900 shadow-[3px_3px_0px_0px_#0f172a] p-2.5 flex items-center gap-2.5 text-left cursor-pointer`}
-          >
-            <div className="shrink-0 bg-white rounded-xl border-2 border-slate-900 p-1">
-              {pic.renderSvg()}
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-extrabold text-slate-950 truncate">
-                {pic.title}
-              </p>
-              <p className="text-[10px] font-bold text-slate-800 leading-tight mt-0.5">
-                {pic.caption}
-              </p>
-              <span className="inline-block mt-1 text-[9px] font-extrabold bg-white/90 px-1.5 py-0.5 rounded border border-slate-900 text-pink-600">
-                Tap Me! ⭐
-              </span>
-            </div>
-          </button>
-        ))}
+        {DOUBLED_GALLERY.map((pic, index) => {
+          const isDuplicateClone = index >= CARTOON_PICTURE_GALLERY.length;
+          return (
+            <button
+              key={`parade-${pic.id}-${index}`}
+              type="button"
+              tabIndex={isDuplicateClone ? -1 : 0}
+              aria-hidden={isDuplicateClone ? "true" : undefined}
+              aria-label={`${pic.title}: ${pic.caption}. Tap for a Gold Star!`}
+              onClick={() => onTapCartoonCard(pic.cheerMessage)}
+              className={`w-48 shrink-0 rounded-2xl ${pic.bgClass} hover:scale-105 transition-transform border-3 border-slate-900 shadow-[3px_3px_0px_0px_#0f172a] p-2.5 flex items-center gap-2.5 text-left cursor-pointer`}
+            >
+              <div
+                aria-hidden="true"
+                className="shrink-0 bg-white rounded-xl border-2 border-slate-900 p-1"
+              >
+                {pic.renderSvg()}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-extrabold text-slate-950 truncate">
+                  {pic.title}
+                </p>
+                <p className="text-[10px] font-bold text-slate-800 leading-tight mt-0.5">
+                  {pic.caption}
+                </p>
+                <span className="inline-block mt-1 text-[9px] font-extrabold bg-white/95 px-1.5 py-0.5 rounded border border-slate-900 text-pink-700">
+                  Tap Me! ⭐
+                </span>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
-};
+});

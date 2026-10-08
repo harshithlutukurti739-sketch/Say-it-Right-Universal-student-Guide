@@ -19,6 +19,88 @@ export interface FallbackParams {
   professorName?: string;
 }
 
+export interface ReadinessScorecard {
+  raw_professionalism_score: number;
+  raw_professionalism_label: string;
+  clarity_score: number;
+  clarity_delta: string;
+  politeness_score: number;
+  politeness_delta: string;
+  tone_warning_status: string;
+}
+
+export interface BeforeAfterHighlight {
+  original_red: string;
+  polished_green: string;
+  reason: string;
+}
+
+export interface EtiquetteLesson {
+  principle: string;
+  before_snippet: string;
+  after_snippet: string;
+  why_it_works: string;
+  simple_kid_friendly_tip: string;
+}
+
+export interface ToneFlag {
+  type: string;
+  severity: string;
+  flagged_phrase: string;
+  issue_explanation: string;
+  suggested_fix: string;
+}
+
+export interface ToneAnalysis {
+  overall_tone_summary: string;
+  warmth_score: number;
+  clarity_score: number;
+  assertiveness_score: number;
+  respect_score: number;
+  flags: ToneFlag[];
+  missing_details_checklist: string[];
+  apology_audit: {
+    unnecessary_apologies_found: number;
+    original_apology_phrases: string[];
+    confident_replacements: string[];
+    empowerment_note: string;
+  };
+}
+
+export interface ProfessorReactions {
+  likely_reply: string;
+  followup_question: string;
+  worst_case_boundary: string;
+}
+
+export interface EmailAnalysisResult {
+  transcribed_text: string;
+  subject_line: string;
+  subject_lines: string[];
+  polished_email: string;
+  readiness_scorecard: ReadinessScorecard;
+  before_after_highlights: BeforeAfterHighlight[];
+  versions: {
+    warm_respectful: string;
+    concise_direct: string;
+    simple_clear: string;
+  };
+  etiquette_lessons: EtiquetteLesson[];
+  tone_analysis: ToneAnalysis;
+  professor_reactions: ProfessorReactions;
+}
+
+export interface RoboChatResponse {
+  reply: string;
+  wordBreakdown?: {
+    word: string;
+    simpleMeaning: string;
+    exampleUse: string;
+    kidAndSeniorTip: string;
+  };
+  suggestedFollowups: string[];
+}
+
 export function isInformalRelationship(relationship: string): boolean {
   const lower = (relationship || "").toLowerCase();
   return (

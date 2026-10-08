@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *, .dark-theme-active, .dark-theme-active *));
+
 @layer base {
   body {
     font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -16,6 +18,34 @@
   code, pre, .font-mono {
     font-family: "IBM Plex Mono", monospace;
     font-variant-numeric: tabular-nums;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="button"]:focus-visible,
+  [role="tab"]:focus-visible {
+    outline: 3px solid #0d9488;
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-cartoon-scroll-left,
+  .animate-cartoon-scroll-right,
+  .animate-cartoon-scroll-fast,
+  .animate-cartoon-float,
+  .animate-balloon-rise,
+  .animate-snow-fall,
+  .animate-confetti-fall,
+  .animate-bounce,
+  .animate-pulse,
+  .animate-spin {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -105,6 +135,25 @@
 
 .animate-snow-fall {
   animation: snowFall 4.2s linear forwards;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translate3d(0, -12vh, 0) rotate(0deg) scale(0.95);
+    opacity: 1;
+  }
+  50% {
+    transform: translate3d(-18px, 48vh, 0) rotate(180deg) scale(1.05);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate3d(16px, 105vh, 0) rotate(360deg) scale(0.9);
+    opacity: 0;
+  }
+}
+
+.animate-confetti-fall {
+  animation: confettiFall 3.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 /* ============================================================================
