@@ -40,6 +40,10 @@ import {
   RotateCcw,
   MessageCircleHeart,
   FileText,
+  Moon,
+  Sun,
+  Keyboard,
+  X,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import {
@@ -936,405 +940,418 @@ const PERSONA_CONFIGS: Record<PersonaId, PersonaConfig> = {
         situation: "General",
         courseOrRef: "Friendly Catch-Up",
         draft:
-          "hey bestie, i know we both got super busy this month and barely talked, i really miss hanging out with you and wanted to check in and plan a coffee catch-up this weekend!",
+          "hey bestie, i know we both got super busy this month and barely talked, i really miss hanging out with you and wanted to check in on how you're doing!",
       },
       {
-        id: "partner_misunderstanding",
-        buttonLabel: "❤️ Clear Up Misunderstanding with Partner",
+        id: "partner_honest_talk",
+        buttonLabel: "❤️ Honest Talk with Romantic Partner",
         relationship: "Romantic Partner / Lover",
         situation: "Clearing Up a Misunderstanding / Honest Talk",
-        courseOrRef: "Heart-to-Heart",
+        courseOrRef: "Us & Communication",
         draft:
-          "i felt really hurt last night when we argued over text and you stopped replying. i care about us a lot and don't want us to stay mad—can we talk warmly tonight?",
+          "i felt a little distant from you after our argument last night. i don't want us to stay mad at each other—i really care about you and want to talk openly tonight.",
+      },
+      {
+        id: "cancel_plans_kindly",
+        buttonLabel: "🛋️ Cancel Plans Last-Minute Kindly",
+        relationship: "Close Friend",
+        situation: "Canceling Plans Last-Minute Without Hurting Feelings",
+        courseOrRef: "Friday Dinner Plans",
+        draft:
+          "hey i am completely exhausted after a brutal week and have a huge headache. i really can't make it to dinner tonight, please don't be mad at me!",
       },
       {
         id: "hinglish_bestie",
-        buttonLabel: "✨ Hinglish Chat with Close Friend",
-        relationship: "Close Friend",
-        situation: "General",
-        courseOrRef: "Weekend Trip Plan",
+        buttonLabel: "🇮🇳 Hinglish Chat to Bestie",
+        relationship: "Bestie",
+        situation: "Apologizing After an Argument or Late Reply",
+        courseOrRef: "Weekend Hangout",
         draft:
-          "yaar kal main dinner pe nahi aa paunga kyunki ghar pe thoda zaroori kaam aa gaya hai, please bura mat manna hum Sunday ko pakka milte hain!",
+          "yaar sorry kal tera call miss ho gaya tha, main assignment mein bohot phasa hua tha. please gussa mat ho, aaj shaam ko milte hain!",
       },
     ],
   },
 };
 
-interface EtiquetteLesson {
-  principle: string;
-  before_snippet: string;
-  after_snippet: string;
-  why_it_works: string;
-  simple_kid_friendly_tip: string;
+interface CrisisStarterCard {
+  id: string;
+  group: "kids_teens" | "college";
+  emoji: string;
+  title: string;
+  subtitle: string;
+  persona: PersonaId;
+  relationship: string;
+  situation: string;
+  courseOrRef: string;
+  draft: string;
 }
 
-interface ToneFlag {
-  type: string;
-  severity: string;
-  flagged_phrase: string;
-  issue_explanation: string;
-  suggested_fix: string;
-}
+const CRISIS_STARTER_CARDS: CrisisStarterCard[] = [
+  // For Kids & Teens
+  {
+    id: "crisis_kid_assignment",
+    group: "kids_teens",
+    emoji: "🎒",
+    title: "Asking for help on a hard assignment",
+    subtitle: "Kind teacher note when homework feels super tricky",
+    persona: "school_kids",
+    relationship: "School Teacher (Kind & Helpful)",
+    situation: "Didn't Understand Homework / Need Extra Help",
+    courseOrRef: "7th Grade Math — Worksheet #4",
+    draft:
+      "i tried doing the homework problems tonight for an hour and i still don't get how to solve #5 and #6. can you please show me how tomorrow morning?",
+  },
+  {
+    id: "crisis_kid_group",
+    group: "kids_teens",
+    emoji: "🤝",
+    title: "Resolving a group project issue politely",
+    subtitle: "Speak up fairly without starting a fight",
+    persona: "school_kids",
+    relationship: "Group Project Classmate / Friend",
+    situation: "Speaking Up About an Unfair Group Project",
+    courseOrRef: "Science Fair Poster Project",
+    draft:
+      "hey, i finished my two sections of the poster, and our project is due on Friday. which part are you going to finish tonight so we both get a good grade?",
+  },
+  {
+    id: "crisis_kid_coach",
+    group: "kids_teens",
+    emoji: "⚽",
+    title: "Informing a coach about a missed practice",
+    subtitle: "Responsible heads-up to your sports coach",
+    persona: "school_kids",
+    relationship: "Sports Coach or Club Advisor",
+    situation: "Forgot Homework or Made a Mistake in Class",
+    courseOrRef: "Varsity / After-School Soccer Practice",
+    draft:
+      "coach, i have a dentist appointment after school tomorrow and my mom says i will miss practice. i will do my conditioning drills at home so i'm ready for Friday's game.",
+  },
+  // For College Students
+  {
+    id: "crisis_college_absence",
+    group: "college",
+    emoji: "🩺",
+    title: "Emergency absence request (with clinic note)",
+    subtitle: "Calm, accountable note when illness hits on exam/lecture day",
+    persona: "college_student",
+    relationship: "Strict / Formal Professor",
+    situation: "Sick & Missed Exam",
+    courseOrRef: "CHEM 201 - Section 03",
+    draft:
+      "hey prof, i had to go to urgent care this morning with a high fever and missed today's lecture and quiz. i have an official clinic note—how can i make up the missed work?",
+  },
+  {
+    id: "crisis_college_grade",
+    group: "college",
+    emoji: "📑",
+    title: "Requesting a grade clarification on a paper",
+    subtitle: "Ask to review rubric feedback without sounding combative",
+    persona: "college_student",
+    relationship: "Friendly / Approachable Professor",
+    situation: "Grade Review / Clarification",
+    courseOrRef: "ENGL 105 - Analytical Paper #2",
+    draft:
+      "hi professor, i saw my grade on Paper 2 and was hoping to understand the rubric deductions on my thesis section so i can improve for the final paper. can we review it in office hours?",
+  },
+  {
+    id: "crisis_college_rec",
+    group: "college",
+    emoji: "💼",
+    title: "Asking for a recommendation letter / research spot",
+    subtitle: "High-conviction, respectful pitch to faculty",
+    persona: "college_student",
+    relationship: "Department Head / Dean",
+    situation: "Request Recommendation Letter",
+    courseOrRef: "BIO 302 - Summer Research Fellowship",
+    draft:
+      "dear professor, i really loved your seminar this semester and earned an A on my final research project. i am applying for the summer research fellowship—would you be willing to write a strong letter of recommendation?",
+  },
+];
 
-interface BeforeAfterHighlight {
-  original_red: string;
-  polished_green: string;
-  reason: string;
-}
-
-interface ProfessorReactions {
-  likely_reply: string;
-  followup_question: string;
-  worst_case_boundary: string;
-}
-
-interface AnalysisResult {
-  transcribed_text?: string;
-  subject_line: string;
-  subject_lines: string[];
-  polished_email: string;
-  platform_used?: string;
-  tone_used?: string;
-  readiness_scorecard: {
-    raw_professionalism_score: number;
-    raw_professionalism_label: string;
-    clarity_score: number;
-    clarity_delta: string;
-    politeness_score: number;
-    politeness_delta: string;
-    tone_warning_status: string;
-  };
-  before_after_highlights: BeforeAfterHighlight[];
-  versions: {
-    warm_respectful: string;
-    concise_direct: string;
-    simple_clear: string;
-  };
-  etiquette_lessons: EtiquetteLesson[];
-  tone_analysis: {
-    overall_tone_summary: string;
-    warmth_score: number;
-    clarity_score: number;
-    assertiveness_score: number;
-    respect_score: number;
-    flags: ToneFlag[];
-    missing_details_checklist: string[];
-    apology_audit: {
-      unnecessary_apologies_found: number;
-      coaching_note: string;
-    };
-  };
-  professor_reactions: ProfessorReactions;
-  using_fallback?: boolean;
-}
-
-function calculateLiveRawProfessionalism(draft: string): {
-  score: number;
-  casualHits: number;
-  statusLabel: string;
-} {
-  const trimmed = draft.trim();
-  if (!trimmed) {
-    return { score: 0, casualHits: 0, statusLabel: "Waiting for input..." };
-  }
-  const lower = trimmed.toLowerCase();
-  const redFlagWords = [
-    "hey",
-    "prof",
-    "literally",
-    "freaking",
-    "sucks",
-    "unfair",
-    "asap",
-    "whatever",
-    "sorry",
-    "my bad",
-    "idk",
-    "pls",
-    "u ",
-    "stupid",
-  ];
-  let hits = 0;
-  for (const w of redFlagWords) {
-    if (lower.includes(w)) hits++;
-  }
-  const hasGreeting =
-    lower.startsWith("dear") ||
-    lower.startsWith("hello professor") ||
-    lower.startsWith("good morning");
-  const base = hasGreeting ? 84 : 74;
-  const score = Math.max(18, Math.min(92, base - hits * 11));
-  const statusLabel =
-    score < 50
-      ? "High Red-Flag Risk (Too Casual / Reactive)"
-      : score < 75
-      ? "Needs Refinement before sending"
-      : "Solid Foundation";
-  return { score, casualHits: hits, statusLabel };
-}
+const DRAFT_STORAGE_KEY = "say_it_right_saved_draft_v2";
+const DARK_MODE_STORAGE_KEY = "say_it_right_dark_mode";
 
 export default function App() {
-  const [persona, setPersona] = useState<PersonaId>("college_student");
-  const currentPersona = PERSONA_CONFIGS[persona];
+  // Dark Mode state with localStorage persistence
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(DARK_MODE_STORAGE_KEY) === "true";
+    } catch {
+      return false;
+    }
+  });
 
-  // Sidebar Controls
+  useEffect(() => {
+    try {
+      localStorage.setItem(DARK_MODE_STORAGE_KEY, String(darkMode));
+    } catch {
+      // Ignore storage errors
+    }
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("dark-theme-active", darkMode);
+    }
+  }, [darkMode]);
+
+  // Core Configuration States
+  const [persona, setPersona] = useState<PersonaId>("college_student");
+  const currentPersonaConfig = PERSONA_CONFIGS[persona];
+
   const [relationship, setRelationship] = useState<string>(
-    currentPersona.presets[0].relationship
+    PERSONA_CONFIGS.college_student.relationships[0]
   );
   const [situation, setSituation] = useState<string>(
-    currentPersona.presets[0].situation
+    PERSONA_CONFIGS.college_student.situations[1]
   );
   const [toneStyle, setToneStyle] = useState<ToneOption>("Polite & Direct");
   const [writerMood, setWriterMood] =
     useState<WriterMoodOption>("Anxious / Stressed");
   const [platform, setPlatform] = useState<PlatformOption>("Email");
-  const [courseOrRefCode, setCourseOrRefCode] = useState<string>(
-    currentPersona.presets[0].courseOrRef
-  );
-  const [studentName, setStudentName] = useState<string>("");
-  const [professorName, setProfessorName] = useState<string>("");
-  const [roughDraft, setRoughDraft] = useState<string>(
-    currentPersona.presets[0].draft
-  );
-
-  // Inclusive Boosters
-  const [apologyStripper, setApologyStripper] = useState<boolean>(true);
-  const [simplifyLanguage, setSimplifyLanguage] = useState<boolean>(false);
-  const [seniorLargeText, setSeniorLargeText] = useState<boolean>(false);
   const [targetLanguage, setTargetLanguage] = useState<string>(
     "Auto-Detect (Match Input Language)"
   );
+  const [apologyStripper, setApologyStripper] = useState<boolean>(true);
+  const [simplifyLanguage, setSimplifyLanguage] = useState<boolean>(false);
+  const [subtleEmojiBooster, setSubtleEmojiBooster] = useState<boolean>(false);
 
-  // Input Mode: "✍️ Type Text" | "🎤 Record Voice Note"
-  const [inputMode, setInputMode] = useState<"text" | "voice">("text");
-  const [isRecordingAudio, setIsRecordingAudio] = useState<boolean>(false);
-  const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
-  const [recordedAudioBase64, setRecordedAudioBase64] = useState<string>("");
-  const [recordedAudioMime, setRecordedAudioMime] =
-    useState<string>("audio/webm");
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const speechRecRef = useRef<any>(null);
-  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
-
-  // Interactive "Do's & Don'ts" Accordion state
-  const [etiquetteTipsOpen, setEtiquetteTipsOpen] = useState<boolean>(false);
-
-  // Easy View vs Detailed View toggle so any age person (kids, seniors, students) can read the page without overwhelm
-  const [easySimpleLayout, setEasySimpleLayout] = useState<boolean>(false);
-  const [showAdvancedComparison, setShowAdvancedComparison] =
-    useState<boolean>(false);
-
-  // Cartoon Kids Zone interactive state (stars, mascot speech bubble, active sticker)
-  const [kidStarsCount, setKidStarsCount] = useState<number>(5);
-  const [kidMascotBubble, setKidMascotBubble] = useState<string>(
-    "Hi Super Kid! I'm Captain Pencil ✏️ and this is Professor Hoot 🦉! Tap any colorful adventure or magic word below to earn Gold Stars! ⭐"
+  // Context & Names
+  const [courseOrRefCode, setCourseOrRefCode] = useState<string>(
+    PERSONA_CONFIGS.college_student.presets[0].courseOrRef
   );
-  const [kidSelectedSticker, setKidSelectedSticker] = useState<string>("uh_oh");
+  const [studentName, setStudentName] = useState<string>("");
+  const [professorName, setProfessorName] = useState<string>("");
 
-  // 2. "Anxiety-Buster" Calming Pastel Palette, Soothing Sound & Celebration Animations (st.balloons / st.snow / confetti)
-  const [calmingTheme, setCalmingTheme] = useState<
-    "soft_blue" | "mint_green" | "warm_purple" | "cartoon_sunny"
-  >("soft_blue");
-  const [anxietySoundEnabled, setAnxietySoundEnabled] = useState<boolean>(true);
-  const [celebrationEffect, setCelebrationEffect] = useState<
-    "balloons" | "snow" | "confetti" | null
-  >(null);
-  const [preferredCelebration, setPreferredCelebration] = useState<
-    "balloons" | "snow" | "confetti"
-  >("balloons");
+  // Draft & Output States
+  const [roughDraft, setRoughDraft] = useState<string>(
+    PERSONA_CONFIGS.college_student.presets[0].draft
+  );
+  const [inputMode, setInputMode] = useState<"text" | "voice">("text");
+  const [outputTextFormat, setOutputTextFormat] = useState<OutputTextFormat>(
+    "standard_paragraphs"
+  );
+  const [selectedVersionTab, setSelectedVersionTab] = useState<
+    "warm_respectful" | "concise_direct" | "simple_clear"
+  >("warm_respectful");
+  const [customEditedBody, setCustomEditedBody] = useState<string | null>(null);
 
-  // 4. Interactive "Before & After" Highlighting active tooltip index
+  // Accessibility & View Mode States
+  const [simpleViewMode, setSimpleViewMode] = useState<boolean>(false);
+  const [largeTextMode, setLargeTextMode] = useState<boolean>(false);
+  const [soundEffectsEnabled, setSoundEffectsEnabled] = useState<boolean>(true);
+  const [celebrationType, setCelebrationType] = useState<
+    "none" | "confetti" | "balloons" | "snow"
+  >("none");
+
+  // Cartoon Kids Zone States
+  const [kidGoldStars, setKidGoldStars] = useState<number>(5);
+  const [kidMascotCheer, setKidMascotCheer] = useState<string>(
+    "🦸‍♂️ Captain Pencil says: Tap any cartoon picture or crisis card to power up your polite message!"
+  );
+
+  // Vibe Check & Cool-Off States
+  const [selectedVibeId, setSelectedVibeId] = useState<string | null>(null);
+  const [coolOffDismissed, setCoolOffDismissed] = useState<boolean>(false);
+
+  // Interactive Safety Checklist before sending
+  const [safetyChecklist, setSafetyChecklist] = useState<{
+    replacedBrackets: boolean;
+    officialSenderEmail: boolean;
+    attachedDocuments: boolean;
+  }>({
+    replacedBrackets: false,
+    officialSenderEmail: false,
+    attachedDocuments: false,
+  });
+
+  // Active Hover/Tap Tooltip Index for Before & After Highlighting
   const [activeHighlightTooltip, setActiveHighlightTooltip] = useState<
     number | null
   >(0);
 
-  // 5. "Read Aloud" Audio Player playback speed
-  const [readAloudSpeed, setReadAloudSpeed] = useState<number>(0.98);
-
-  // 6. Quick "Safety Checklist" Before Sending (3 core pre-flight checks right below final draft)
-  const [safetyChecklist, setSafetyChecklist] = useState<{
-    replacedBrackets: boolean;
-    officialEmailSelected: boolean;
-    attachedDocuments: boolean;
-  }>({
-    replacedBrackets: false,
-    officialEmailSelected: false,
-    attachedDocuments: false,
-  });
-
-  // NEW: Vibe Check & Intent Selector, Subtle Emoji Enhancer, and Cool-Off Breathing state
-  const [selectedVibeId, setSelectedVibeId] = useState<string>("flirty_playful");
-  const [subtleEmojiEnhancer, setSubtleEmojiEnhancer] = useState<boolean>(true);
-  const [coolOffBreathingSec, setCoolOffBreathingSec] = useState<number>(0);
-
-  const handleSelectVibeCheck = (vibe: VibeCheckItem) => {
-    setSelectedVibeId(vibe.id);
-    setPersona("friendly_chat");
-    setRelationship(vibe.relationship);
-    setSituation(vibe.situation);
-    setWriterMood(vibe.mood);
-    setPlatform("WhatsApp / Text Message");
-    setRoughDraft(vibe.sampleDraft);
-    setCustomEditedOutput(vibe.vibePreview);
-    playAnxietyBusterChime();
-    handleGenerate({
-      draftOverride: vibe.sampleDraft,
-      personaOverride: "friendly_chat",
-      relOverride: vibe.relationship,
-      sitOverride: vibe.situation,
-      moodOverride: vibe.mood,
-      platformOverride: "WhatsApp / Text Message",
-    });
-  };
-
-  const handleReframeWithIFeel = () => {
-    const reframed = roughDraft
-      .replace(/\byou always\b/gi, "I feel hurt when")
-      .replace(/\byou never\b/gi, "I really value when we")
-      .replace(/\byour fault\b/gi, "a tough misunderstanding for both of us")
-      .replace(/\bfine,?\s*whatever\b/gi, "I need a little time to process this")
-      .replace(/\bk\.\b/gi, "Got it, let's talk when we're both free.");
-
-    const finalReframe =
-      reframed === roughDraft
-        ? `I feel a bit overwhelmed right now and I really care about our connection. Could we talk this through calmly when we're both free? 💛`
-        : `${reframed} (Sharing how I feel because I really care about us 💛)`;
-
-    setRoughDraft(finalReframe);
-    setWriterMood("Calm / Neutral");
-    playAnxietyBusterChime();
-    handleGenerate({
-      draftOverride: finalReframe,
-      moodOverride: "Calm / Neutral",
-    });
-  };
-
-  const startCoolOffBreathing = () => {
-    setCoolOffBreathingSec(5);
-    const interval = setInterval(() => {
-      setCoolOffBreathingSec((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  // Web Audio API soothing "Anxiety-Buster" chime (no external audio files needed)
-  const playAnxietyBusterChime = () => {
-    if (!anxietySoundEnabled) return;
-    try {
-      const AudioCtx =
-        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const notes = [523.25, 659.25, 783.99]; // C5 - E5 - G5 calming major triad
-      notes.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.09);
-        gain.gain.setValueAtTime(0.001, ctx.currentTime + idx * 0.09);
-        gain.gain.exponentialRampToValueAtTime(
-          0.07,
-          ctx.currentTime + idx * 0.09 + 0.04
-        );
-        gain.gain.exponentialRampToValueAtTime(
-          0.0001,
-          ctx.currentTime + idx * 0.09 + 0.55
-        );
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.09);
-        osc.stop(ctx.currentTime + idx * 0.09 + 0.6);
-      });
-    } catch (_e) {
-      // Ignore if browser blocks autoplay audio
-    }
-  };
-
-  const triggerCelebration = (
-    type: "balloons" | "snow" | "confetti" = preferredCelebration
-  ) => {
-    setCelebrationEffect(type);
-    playAnxietyBusterChime();
-    setTimeout(() => {
-      setCelebrationEffect((curr) => (curr === type ? null : curr));
-    }, 3900);
-  };
-
-  const handleAddKidMagicPhrase = (phrase: string, cheerText: string) => {
-    setRoughDraft((prev) => {
-      const trimmed = prev.trim();
-      return trimmed ? `${trimmed} ${phrase}` : phrase;
-    });
-    setKidStarsCount((prev) => prev + 1);
-    setKidMascotBubble(cheerText);
-    playAnxietyBusterChime();
-  };
-
-  // Output Tabs & Variants
-  const [activeOutputTab, setActiveOutputTab] = useState<
-    "tab1" | "tab2" | "tab3"
-  >("tab1");
-  const [selectedVariant, setSelectedVariant] = useState<
-    "warm_respectful" | "concise_direct" | "simple_clear"
-  >("warm_respectful");
-  const [outputTextFormat, setOutputTextFormat] = useState<OutputTextFormat>(
-    "standard_paragraphs"
+  // Analysis & Loading States
+  const [analysis, setAnalysis] = useState<any>(() =>
+    buildFallbackResponse({
+      roughDraft: PERSONA_CONFIGS.college_student.presets[0].draft,
+      persona: "college_student",
+      relationship: PERSONA_CONFIGS.college_student.relationships[0],
+      situation: PERSONA_CONFIGS.college_student.situations[1],
+      toneStyle: "Polite & Direct",
+      writerMood: "Anxious / Stressed",
+      platform: "Email",
+      apologyStripper: true,
+      simplifyLanguage: false,
+      targetLanguage: "English",
+      courseOrRefCode: PERSONA_CONFIGS.college_student.presets[0].courseOrRef,
+    })
   );
-  const [isEditingOutput, setIsEditingOutput] = useState<boolean>(false);
-  const [customEditedOutput, setCustomEditedOutput] = useState<string | null>(
-    null
-  );
-  const [comparisonViewMode, setComparisonViewMode] = useState<
-    "side_by_side" | "slider_split"
-  >("side_by_side");
-  const [sliderPosition, setSliderPosition] = useState<number>(50);
-
-  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // Professor Response Simulator state
-  const [showReactionSimulator, setShowReactionSimulator] =
-    useState<boolean>(false);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isSimulatingReaction, setIsSimulatingReaction] =
     useState<boolean>(false);
-  const [simulatedReactions, setSimulatedReactions] =
-    useState<ProfessorReactions | null>(null);
+  const [showReactionPanel, setShowReactionPanel] = useState<boolean>(true);
 
-  // Interactive Checklist state
-  const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
-
-  // Copy & Audio states
+  // Copy, Download & PDF Export Feedback States
+  const [copiedMain, setCopiedMain] = useState<boolean>(false);
   const [copiedSubjectIdx, setCopiedSubjectIdx] = useState<number | null>(null);
-  const [copiedBody, setCopiedBody] = useState<boolean>(false);
-  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const [exportedPdfSuccess, setExportedPdfSuccess] = useState<boolean>(false);
 
-  // Cute Robo Chatbot Word Trigger
-  const [roboWordTrigger, setRoboWordTrigger] = useState<string | null>(null);
-
-  // LocalStorage Draft & Persona Persistence states
-  const STORAGE_KEY = "say_it_right_saved_draft_v1";
-  const [hasSavedDraft, setHasSavedDraft] = useState<boolean>(() => {
+  // Save / Load Draft States
+  const [savedDraftStatus, setSavedDraftStatus] = useState<string | null>(null);
+  const [hasStoredDraft, setHasStoredDraft] = useState<boolean>(() => {
     try {
-      return Boolean(localStorage.getItem("say_it_right_saved_draft_v1"));
+      return Boolean(localStorage.getItem(DRAFT_STORAGE_KEY));
     } catch {
       return false;
     }
   });
-  const [draftStorageFeedback, setDraftStorageFeedback] = useState<
-    string | null
-  >(null);
 
-  const handleSaveDraftToStorage = () => {
+  // Read Aloud & Voice Recording States
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [recordingSeconds, setRecordingSeconds] = useState<number>(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+
+  // Cute Robo Word Trigger
+  const [externalWordTrigger, setExternalWordTrigger] = useState<string | null>(
+    null
+  );
+
+  // Global Keyboard Shortcuts Modal & Toast
+  const [showShortcutsModal, setShowShortcutsModal] = useState<boolean>(false);
+  const [shortcutToast, setShortcutToast] = useState<string | null>(null);
+
+  const triggerShortcutToast = (msg: string) => {
+    setShortcutToast(msg);
+    setTimeout(() => {
+      setShortcutToast((prev) => (prev === msg ? null : prev));
+    }, 2600);
+  };
+
+  // Web Audio API Calming / Cheer Sound Effects
+  const playFeedbackSound = (type: "calm_chime" | "kid_star" | "pop") => {
+    if (!soundEffectsEnabled || typeof window === "undefined") return;
+    try {
+      const AudioCtx =
+        window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+
+      if (type === "calm_chime") {
+        const freqs = [523.25, 659.25, 783.99, 1046.5];
+        freqs.forEach((f, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(f, now + idx * 0.09);
+          gain.gain.setValueAtTime(0.08, now + idx * 0.09);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.45);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.09);
+          osc.stop(now + idx * 0.09 + 0.46);
+        });
+      } else if (type === "kid_star") {
+        const freqs = [587.33, 880, 1174.66];
+        freqs.forEach((f, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(f, now + idx * 0.07);
+          gain.gain.setValueAtTime(0.1, now + idx * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.3);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.07);
+          osc.stop(now + idx * 0.07 + 0.32);
+        });
+      } else {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(660, now);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.16);
+      }
+    } catch {
+      // Ignore audio context autoplay blocks
+    }
+  };
+
+  const launchCelebration = (
+    mode: "confetti" | "balloons" | "snow" = "confetti"
+  ) => {
+    setCelebrationType(mode);
+    playFeedbackSound(persona === "school_kids" ? "kid_star" : "calm_chime");
+    setTimeout(() => {
+      setCelebrationType("none");
+    }, 3800);
+  };
+
+  // Derived language detection & Overthinking Shield metrics
+  const detectedLangInfo = detectInputLanguage(roughDraft);
+  const resolvedLanguage =
+    targetLanguage === "Auto-Detect (Match Input Language)"
+      ? detectedLangInfo.matchedLanguageOption
+      : targetLanguage;
+
+  const overthinkingMetrics = analyzeOverthinkingRadar(roughDraft);
+  const isHeatedMoment =
+    writerMood === "Angry / Heated" ||
+    writerMood === "Frustrated" ||
+    overthinkingMetrics.heatedYouAlwaysHits.length > 0;
+
+  // Switch persona cleanly
+  const handleSelectPersona = (newPersona: PersonaId) => {
+    const cfg = PERSONA_CONFIGS[newPersona];
+    setPersona(newPersona);
+    setRelationship(cfg.relationships[0]);
+    setSituation(cfg.situations[1] || cfg.situations[0]);
+    const firstPreset = cfg.presets[0];
+    if (firstPreset) {
+      setCourseOrRefCode(firstPreset.courseOrRef);
+      setRoughDraft(firstPreset.draft);
+      setRelationship(firstPreset.relationship);
+      setSituation(firstPreset.situation);
+    }
+    if (newPersona === "friendly_chat") {
+      setPlatform("WhatsApp / Text Message");
+    } else if (newPersona === "school_kids" || newPersona === "seniors") {
+      setSimplifyLanguage(true);
+    } else {
+      setPlatform("Email");
+      setSimplifyLanguage(false);
+    }
+    setCustomEditedBody(null);
+    playFeedbackSound("pop");
+  };
+
+  // Reframe "You always / You never" into "I feel" statements
+  const handleReframeIFeelStatements = () => {
+    let updated = roughDraft
+      .replace(/\byou always\b/gi, "I feel overwhelmed when")
+      .replace(/\byou never\b/gi, "I would really appreciate it if we could")
+      .replace(/\byour fault\b/gi, "a tough misunderstanding for both of us")
+      .replace(/\bwhatever\b/gi, "I want us to be on the same page");
+    if (updated === roughDraft) {
+      updated = `I feel hurt and overwhelmed right now, and because I care about our connection, I want to talk this through calmly: ${roughDraft}`;
+    }
+    setRoughDraft(updated);
+    setWriterMood("Calm / Neutral");
+    setCoolOffDismissed(true);
+    triggerShortcutToast("🕊️ Reframed with 'I feel' statements!");
+    handleGenerate({ draftOverride: updated, moodOverride: "Calm / Neutral" });
+  };
+
+  // Save & Load Draft Helpers
+  const saveCurrentDraftToStorage = () => {
     try {
       const payload = {
-        roughDraft,
         persona,
         relationship,
         situation,
@@ -1342,135 +1359,143 @@ export default function App() {
         writerMood,
         platform,
         courseOrRefCode,
-        professorName,
         studentName,
-        apologyStripper,
-        simplifyLanguage,
-        targetLanguage,
-        seniorLargeText,
+        professorName,
+        roughDraft,
         savedAt: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-      setHasSavedDraft(true);
-      setDraftStorageFeedback(`Draft & settings saved (${payload.savedAt})`);
-      setTimeout(() => setDraftStorageFeedback(null), 3500);
+      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(payload));
+      setHasStoredDraft(true);
+      setSavedDraftStatus(`Saved (${payload.savedAt})`);
+      setTimeout(() => setSavedDraftStatus(null), 3000);
     } catch {
-      setDraftStorageFeedback("Could not save to browser storage");
-      setTimeout(() => setDraftStorageFeedback(null), 3500);
+      setSavedDraftStatus("Save failed");
     }
   };
 
-  const handleLoadLastDraftFromStorage = () => {
+  const loadSavedDraftFromStorage = () => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        setDraftStorageFeedback("No saved draft found yet");
-        setTimeout(() => setDraftStorageFeedback(null), 3500);
-        return;
+      const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data.persona && PERSONA_CONFIGS[data.persona as PersonaId]) {
+        setPersona(data.persona);
       }
-      const parsed = JSON.parse(raw);
-      const nextPersona: PersonaId = parsed.persona || persona;
-      const nextDraft: string =
-        parsed.roughDraft !== undefined ? parsed.roughDraft : roughDraft;
-      const nextRel: string = parsed.relationship || relationship;
-      const nextSit: string = parsed.situation || situation;
-      const nextTone: ToneOption = parsed.toneStyle || toneStyle;
-      const nextMood: WriterMoodOption = parsed.writerMood || writerMood;
-      const nextPlatform: PlatformOption = parsed.platform || platform;
-      const nextRef: string =
-        parsed.courseOrRefCode !== undefined
-          ? parsed.courseOrRefCode
-          : courseOrRefCode;
-      const nextApology: boolean =
-        parsed.apologyStripper !== undefined
-          ? Boolean(parsed.apologyStripper)
-          : apologyStripper;
-      const nextSimplify: boolean =
-        parsed.simplifyLanguage !== undefined
-          ? Boolean(parsed.simplifyLanguage)
-          : simplifyLanguage;
-      const nextLang: string = parsed.targetLanguage || targetLanguage;
-
-      setPersona(nextPersona);
-      setRoughDraft(nextDraft);
-      setRelationship(nextRel);
-      setSituation(nextSit);
-      setToneStyle(nextTone);
-      setWriterMood(nextMood);
-      setPlatform(nextPlatform);
-      setCourseOrRefCode(nextRef);
-      if (parsed.professorName !== undefined) {
-        setProfessorName(parsed.professorName);
-      }
-      if (parsed.studentName !== undefined) {
-        setStudentName(parsed.studentName);
-      }
-      setApologyStripper(nextApology);
-      setSimplifyLanguage(nextSimplify);
-      setTargetLanguage(nextLang);
-      if (parsed.seniorLargeText !== undefined) {
-        setSeniorLargeText(Boolean(parsed.seniorLargeText));
-      }
-
-      setDraftStorageFeedback(
-        `Loaded saved draft${parsed.savedAt ? ` from ${parsed.savedAt}` : ""}`
-      );
-      setTimeout(() => setDraftStorageFeedback(null), 3500);
-
-      handleGenerate({
-        draftOverride: nextDraft,
-        personaOverride: nextPersona,
-        relOverride: nextRel,
-        sitOverride: nextSit,
-        toneOverride: nextTone,
-        moodOverride: nextMood,
-        platformOverride: nextPlatform,
-        apologyOverride: nextApology,
-        simplifyOverride: nextSimplify,
-        langOverride: nextLang,
-        refOverride: nextRef,
-      });
+      if (data.relationship) setRelationship(data.relationship);
+      if (data.situation) setSituation(data.situation);
+      if (data.toneStyle) setToneStyle(data.toneStyle);
+      if (data.writerMood) setWriterMood(data.writerMood);
+      if (data.platform) setPlatform(data.platform);
+      if (typeof data.courseOrRefCode === "string")
+        setCourseOrRefCode(data.courseOrRefCode);
+      if (typeof data.studentName === "string")
+        setStudentName(data.studentName);
+      if (typeof data.professorName === "string")
+        setProfessorName(data.professorName);
+      if (typeof data.roughDraft === "string") setRoughDraft(data.roughDraft);
+      setCustomEditedBody(null);
+      setSavedDraftStatus("Loaded saved draft!");
+      setTimeout(() => setSavedDraftStatus(null), 2500);
     } catch {
-      setDraftStorageFeedback("Could not load saved draft");
-      setTimeout(() => setDraftStorageFeedback(null), 3500);
+      // Ignore invalid JSON
     }
   };
 
-  const handleSelectPersona = (newPersona: PersonaId) => {
-    setPersona(newPersona);
-    const cfg = PERSONA_CONFIGS[newPersona];
-    const firstPreset = cfg.presets[0];
-    setRelationship(firstPreset.relationship);
-    setSituation(firstPreset.situation);
-    setCourseOrRefCode(firstPreset.courseOrRef);
-    setRoughDraft(firstPreset.draft);
-    const useApology =
-      newPersona === "women_advocacy" || newPersona === "college_student";
-    const useSimple =
-      newPersona === "seniors" || newPersona === "school_kids";
-    const nextPlat: PlatformOption =
-      newPersona === "friendly_chat" ? "WhatsApp / Text Message" : platform;
-    if (newPersona === "friendly_chat") {
-      setPlatform("WhatsApp / Text Message");
-    }
-    setApologyStripper(useApology);
-    setSimplifyLanguage(useSimple);
-    if (newPersona === "seniors") {
-      setSeniorLargeText(true);
-    }
-    handleGenerate({
-      draftOverride: firstPreset.draft,
-      personaOverride: newPersona,
-      relOverride: firstPreset.relationship,
-      sitOverride: firstPreset.situation,
-      platformOverride: nextPlat,
-      apologyOverride: useApology,
-      simplifyOverride: useSimple,
-      refOverride: firstPreset.courseOrRef,
+  // Main Generate / Polish Handler
+  const handleGenerate = async (overrides?: {
+    draftOverride?: string;
+    personaOverride?: PersonaId;
+    relationshipOverride?: string;
+    situationOverride?: string;
+    courseOverride?: string;
+    moodOverride?: WriterMoodOption;
+    languageOverride?: string;
+    audioBase64?: string;
+    audioMimeType?: string;
+    celebrate?: boolean;
+  }) => {
+    const activePersona = overrides?.personaOverride || persona;
+    const activeRel = overrides?.relationshipOverride || relationship;
+    const activeSit = overrides?.situationOverride || situation;
+    const activeCourse =
+      overrides?.courseOverride !== undefined
+        ? overrides.courseOverride
+        : courseOrRefCode;
+    const activeDraft =
+      overrides?.draftOverride !== undefined
+        ? overrides.draftOverride
+        : roughDraft;
+    const activeMood = overrides?.moodOverride || writerMood;
+    const activeLang = overrides?.languageOverride || resolvedLanguage;
+
+    setIsGenerating(true);
+    setCustomEditedBody(null);
+
+    const immediateFallback = buildFallbackResponse({
+      roughDraft: activeDraft,
+      persona: activePersona,
+      relationship: activeRel,
+      situation: activeSit,
+      toneStyle,
+      writerMood: activeMood,
+      platform,
+      apologyStripper,
+      simplifyLanguage,
+      targetLanguage: activeLang,
+      courseOrRefCode: activeCourse,
+      studentName,
+      professorName,
     });
+
+    try {
+      const response = await fetch("/api/analyze-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roughDraft: activeDraft,
+          persona: activePersona,
+          personaLabel: PERSONA_CONFIGS[activePersona].fullTitle,
+          relationship: activeRel,
+          situation: activeSit,
+          toneStyle,
+          writerMood: activeMood,
+          platform,
+          apologyStripper,
+          simplifyLanguage,
+          targetLanguage: activeLang,
+          courseOrRefCode: activeCourse,
+          studentName,
+          professorName,
+          audioBase64: overrides?.audioBase64 || "",
+          audioMimeType: overrides?.audioMimeType || "audio/webm",
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAnalysis(data);
+        if (overrides?.audioBase64 && data.transcribed_text) {
+          setRoughDraft(data.transcribed_text);
+        }
+      } else {
+        setAnalysis(immediateFallback);
+      }
+    } catch {
+      setAnalysis(immediateFallback);
+    } finally {
+      setIsGenerating(false);
+      if (overrides?.celebrate !== false) {
+        launchCelebration(
+          activePersona === "school_kids" ? "balloons" : "confetti"
+        );
+        if (activePersona === "school_kids") {
+          setKidGoldStars((s) => s + 1);
+        }
+      }
+    }
   };
 
   // Run initial analysis on first mount
@@ -1479,351 +1504,62 @@ export default function App() {
     handleGenerate({
       draftOverride: firstPreset.draft,
       personaOverride: "college_student",
-      relOverride: firstPreset.relationship,
-      sitOverride: firstPreset.situation,
-      toneOverride: "Polite & Direct",
-      platformOverride: "Email",
-      refOverride: firstPreset.courseOrRef,
+      relationshipOverride: firstPreset.relationship,
+      situationOverride: firstPreset.situation,
+      courseOverride: firstPreset.courseOrRef,
+      celebrate: false,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleGenerate = async (overrides?: {
-    draftOverride?: string;
-    personaOverride?: PersonaId;
-    relOverride?: string;
-    sitOverride?: string;
-    toneOverride?: ToneOption;
-    moodOverride?: WriterMoodOption;
-    platformOverride?: PlatformOption;
-    apologyOverride?: boolean;
-    simplifyOverride?: boolean;
-    langOverride?: string;
-    refOverride?: string;
-    audioBase64Override?: string;
-  }) => {
-    const textToAnalyze =
-      overrides?.draftOverride !== undefined
-        ? overrides.draftOverride
-        : roughDraft;
-    const audioToAnalyze =
-      overrides?.audioBase64Override !== undefined
-        ? overrides.audioBase64Override
-        : recordedAudioBase64;
+  // Compute the active base message from the selected tab + optional emoji booster + format selector
+  const rawSelectedVersionText =
+    analysis?.versions?.[selectedVersionTab] || analysis?.polished_email || "";
 
-    if (!textToAnalyze.trim() && !audioToAnalyze) {
-      setErrorMsg(
-        "Please type your rough thoughts, click a Quick-Fill Preset in the sidebar, or record a voice note first."
-      );
-      return;
+  const emojiBoostedText = subtleEmojiBooster
+    ? `${rawSelectedVersionText.trim()} 🥺✨💛`
+    : rawSelectedVersionText;
+
+  const formattedOutputBody = formatOutputText(
+    emojiBoostedText,
+    outputTextFormat,
+    {
+      subjectLine: analysis?.subject_line || "",
+      recipient: professorName || relationship,
+      sender: studentName || "[Your Name]",
+      courseOrRef: courseOrRefCode,
     }
+  );
 
-    setErrorMsg(null);
-    setIsLoading(true);
-    setCheckedItems({});
-    setShowReactionSimulator(false);
-    setCustomEditedOutput(null);
-    setIsEditingOutput(false);
-
-    const activePersona = overrides?.personaOverride || persona;
-    const activePersonaCfg = PERSONA_CONFIGS[activePersona];
-    const activeTone = overrides?.toneOverride || toneStyle;
-    const activeMood = overrides?.moodOverride || writerMood;
-    const activePlatform = overrides?.platformOverride || platform;
-    const activeRel =
-      overrides?.relOverride !== undefined
-        ? overrides.relOverride
-        : relationship;
-    const activeSit =
-      overrides?.sitOverride !== undefined ? overrides.sitOverride : situation;
-    const activeApology =
-      overrides?.apologyOverride !== undefined
-        ? overrides.apologyOverride
-        : apologyStripper;
-    const activeSimplify =
-      overrides?.simplifyOverride !== undefined
-        ? overrides.simplifyOverride
-        : simplifyLanguage;
-    const activeLangRaw =
-      overrides?.langOverride !== undefined
-        ? overrides.langOverride
-        : targetLanguage;
-    const autoDetected = detectInputLanguage(textToAnalyze);
-    const activeLang =
-      activeLangRaw.startsWith("Auto-Detect")
-        ? autoDetected.matchedLanguageOption
-        : activeLangRaw;
-    const activeRef =
-      overrides?.refOverride !== undefined
-        ? overrides.refOverride
-        : courseOrRefCode;
-
-    const fallbackData: AnalysisResult = buildFallbackResponse({
-      roughDraft: textToAnalyze,
-      persona: activePersona,
-      relationship: activeRel,
-      situation: activeSit,
-      toneStyle: activeTone,
-      writerMood: activeMood,
-      platform: activePlatform,
-      apologyStripper: activeApology,
-      simplifyLanguage: activeSimplify,
-      targetLanguage: activeLang,
-      courseOrRefCode: activeRef,
-      studentName,
-      professorName,
-    });
-
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
-
-      const response = await fetch("/api/analyze-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          roughDraft: textToAnalyze,
-          persona: activePersona,
-          personaLabel: activePersonaCfg.fullTitle,
-          relationship: activeRel,
-          situation: activeSit,
-          toneStyle: activeTone,
-          writerMood: activeMood,
-          platform: activePlatform,
-          apologyStripper: activeApology,
-          simplifyLanguage: activeSimplify,
-          targetLanguage: activeLang,
-          courseOrRefCode: activeRef,
-          studentName,
-          professorName,
-          audioBase64: audioToAnalyze,
-          audioMimeType: recordedAudioMime,
-        }),
-      });
-
-      clearTimeout(timeoutId);
-
-      let parsedData: AnalysisResult | null = null;
-      if (response.ok) {
-        const rawText = await response.text();
-        try {
-          parsedData = JSON.parse(rawText);
-        } catch (_jsonErr) {
-          parsedData = null;
-        }
-      }
-
-      const finalResult: AnalysisResult =
-        parsedData && parsedData.polished_email
-          ? { ...fallbackData, ...parsedData }
-          : fallbackData;
-
-      setAnalysis(finalResult);
-      setSimulatedReactions(
-        finalResult.professor_reactions || fallbackData.professor_reactions
-      );
-      if (finalResult.transcribed_text && audioToAnalyze) {
-        setRoughDraft(finalResult.transcribed_text);
-      }
-      setSelectedVariant(activeSimplify ? "simple_clear" : "warm_respectful");
-    } catch (_err: any) {
-      // Never crash or display an error banner — fall back cleanly to static structured coaching data
-      setAnalysis(fallbackData);
-      setSimulatedReactions(fallbackData.professor_reactions);
-      setSelectedVariant(activeSimplify ? "simple_clear" : "warm_respectful");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Load a sidebar Quick-Fill Preset
-  const handleLoadPreset = (preset: PresetScenario) => {
-    setRelationship(preset.relationship);
-    setSituation(preset.situation);
-    setCourseOrRefCode(preset.courseOrRef);
-    setRoughDraft(preset.draft);
-    handleGenerate({
-      draftOverride: preset.draft,
-      personaOverride: persona,
-      relOverride: preset.relationship,
-      sitOverride: preset.situation,
-      toneOverride: toneStyle,
-      platformOverride: platform,
-      refOverride: preset.courseOrRef,
-    });
-  };
-
-  // Native Voice Note Recorder ("Rant-to-Email" Multimodal Audio + Live Speech-to-Text simultaneously)
-  const startAudioRecording = async () => {
-    setErrorMsg(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      audioChunksRef.current = [];
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          audioChunksRef.current.push(e.data);
-        }
-      };
-
-      recorder.onstop = () => {
-        const mimeType = recorder.mimeType || "audio/webm";
-        const blob = new Blob(audioChunksRef.current, { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        setRecordedAudioUrl(url);
-        setRecordedAudioMime(mimeType);
-
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64String = (reader.result as string)?.split(",")[1] || "";
-          setRecordedAudioBase64(base64String);
-        };
-        reader.readAsDataURL(blob);
-        stream.getTracks().forEach((track) => track.stop());
-      };
-
-      mediaRecorderRef.current = recorder;
-      recorder.start();
-      setIsRecordingAudio(true);
-
-      // Also start browser SpeechRecognition in parallel if supported so the user sees live words appear
-      const SpeechRecognition =
-        (window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = false;
-        recognition.lang = "en-US";
-        recognition.onresult = (event: any) => {
-          const lastIdx = event.results.length - 1;
-          const transcript = event.results[lastIdx]?.[0]?.transcript;
-          if (transcript) {
-            setRoughDraft((prev) =>
-              prev.trim() ? `${prev.trim()} ${transcript}` : transcript
-            );
-          }
-        };
-        speechRecRef.current = recognition;
-        try {
-          recognition.start();
-        } catch (_e) {}
-      }
-    } catch (_err) {
-      setErrorMsg(
-        "Microphone access wasn't granted in this tab. You can upload an audio file or click 'Load Sample Rant' below to test Rant-to-Email immediately."
-      );
-    }
-  };
-
-  const stopAudioRecording = () => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state !== "inactive"
-    ) {
-      mediaRecorderRef.current.stop();
-    }
-    if (speechRecRef.current) {
-      try {
-        speechRecRef.current.stop();
-      } catch (_e) {}
-    }
-    setIsRecordingAudio(false);
-  };
-
-  // Upload an audio file (.wav, .mp3, .m4a, .webm) for Rant-to-Email
-  const handleAudioFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    setRecordedAudioUrl(url);
-    setRecordedAudioMime(file.type || "audio/wav");
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = (reader.result as string)?.split(",")[1] || "";
-      setRecordedAudioBase64(base64String);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const loadSampleRantAudioTranscript = () => {
-    const sampleRant =
-      "Prof, I'm super overwhelmed right now, my car broke down on the highway this morning and I can't make the 9 AM group presentation! I have all my slides ready and the tow truck receipt, please don't fail me!";
-    setRoughDraft(sampleRant);
-    handleGenerate({
-      draftOverride: sampleRant,
-    });
-  };
-
-  // Predict Professor's Reaction Button handler
-  const handlePredictReaction = async () => {
-    if (!analysis) return;
-    setShowReactionSimulator(true);
-
-    const defaultReactions: ProfessorReactions =
-      analysis.professor_reactions || {
-        likely_reply:
-          "Sure, thank you for letting me know ahead of time and proposing a clear plan. You may submit by Friday at midnight without penalty.",
-        followup_question:
-          "Thanks for reaching out. Please provide a doctor's note or official documentation and confirm which class section you attend.",
-        worst_case_boundary:
-          "Please consult the syllabus regarding missed deadlines. Extensions require prior documentation verified through Student Services.",
-      };
-
-    setIsSimulatingReaction(true);
-    try {
-      const res = await fetch("/api/simulate-reaction", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          polishedEmail: displayedEmailBody,
-          relationship,
-          situation,
-        }),
-      });
-      if (res.ok) {
-        const rawText = await res.text();
-        try {
-          const parsed = JSON.parse(rawText);
-          if (parsed && parsed.likely_reply) {
-            setSimulatedReactions(parsed);
-            return;
-          }
-        } catch (_jsonErr) {}
-      }
-      setSimulatedReactions(defaultReactions);
-    } catch (_e) {
-      setSimulatedReactions(defaultReactions);
-    } finally {
-      setIsSimulatingReaction(false);
-    }
-  };
+  const displayedEmailBody =
+    customEditedBody !== null ? customEditedBody : formattedOutputBody;
 
   // Copy & Download helpers
-  const [exportedPdfSuccess, setExportedPdfSuccess] = useState<boolean>(false);
-
   const copySubject = (text: string, idx: number) => {
     navigator.clipboard.writeText(text);
     setCopiedSubjectIdx(idx);
     setTimeout(() => setCopiedSubjectIdx(null), 2000);
   };
 
-  const copyBodyText = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedBody(true);
-    setTimeout(() => setCopiedBody(false), 2000);
+  const copyMainOutput = () => {
+    const fullText =
+      platform === "Email" && analysis?.subject_line
+        ? `Subject: ${analysis.subject_line}\n\n${displayedEmailBody}`
+        : displayedEmailBody;
+    navigator.clipboard.writeText(fullText);
+    setCopiedMain(true);
+    setTimeout(() => setCopiedMain(false), 2200);
   };
 
-  // Download .txt file
   const downloadTxtFile = (filename: string, content: string) => {
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = filename;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
@@ -1835,16 +1571,11 @@ export default function App() {
       .replace(/[\u201C\u201D]/g, '"')
       .replace(/[\u2013\u2014]/g, "-")
       .replace(/\u2022/g, "*")
-      .replace(/\u2026/g, "...")
-      .replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, "")
-      .replace(/[ \t]{2,}/g, " ")
+      .replace(/[^\x09\x0A\x0D\x20-\x7E\u00A0-\u00FF]/g, "")
       .trim();
   };
 
-  // Export Polished Message as a Professionally Formatted PDF Document
   const downloadFormattedPdf = () => {
-    if (!analysis) return;
-
     try {
       const doc = new jsPDF({
         orientation: "portrait",
@@ -1856,298 +1587,155 @@ export default function App() {
       const pageHeight = doc.internal.pageSize.getHeight();
       const margin = 16;
       const contentWidth = pageWidth - margin * 2;
-      let cursorY = 16;
+      let y = 18;
 
-      const checkPageBreak = (neededHeight: number) => {
-        if (cursorY + neededHeight > pageHeight - 18) {
-          doc.addPage();
-          cursorY = 18;
-        }
-      };
-
-      // 1. Top Branded Header Banner
+      // Top Branded Header Banner
       doc.setFillColor(15, 118, 110); // Teal-700
-      doc.roundedRect(margin, cursorY, contentWidth, 24, 3, 3, "F");
+      doc.rect(0, 0, pageWidth, 28, "F");
 
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.text(
-        "SAY IT RIGHT - POLISHED COMMUNICATION DOCUMENT",
-        margin + 6,
-        cursorY + 9.5
-      );
+      doc.setFontSize(15);
+      doc.text("Say It Right - Polished Communication Document", margin, 12);
 
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
+      doc.setFontSize(9.5);
       const dateStr = new Date().toLocaleDateString("en-US", {
         year: "numeric",
-        month: "long",
+        month: "short",
         day: "numeric",
       });
       doc.text(
         toPdfSafeText(
-          `Prepared on ${dateStr}  |  Mode: ${currentPersonaConfig.shortLabel}  |  Format: ${
-            OUTPUT_TEXT_FORMAT_OPTIONS.find((f) => f.id === outputTextFormat)
-              ?.label || "Standard"
-          }`
+          `Mode: ${currentPersonaConfig.shortLabel}  |  Channel: ${platform}  |  Tone: ${toneStyle}  |  Date: ${dateStr}`
         ),
-        margin + 6,
-        cursorY + 17.5
+        margin,
+        20
       );
 
-      cursorY += 30;
+      y = 36;
 
-      // 2. Context & Etiquette Score Metadata Grid
-      doc.setFillColor(248, 250, 252); // Slate-50
-      doc.setDrawColor(203, 213, 225); // Slate-300
-      doc.roundedRect(margin, cursorY, contentWidth, 26, 2, 2, "FD");
+      // Metadata & Etiquette Scorecard Summary Box
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(203, 213, 225);
+      doc.roundedRect(margin, y, contentWidth, 24, 3, 3, "FD");
 
       doc.setTextColor(30, 41, 59);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.text("RECIPIENT & CONTEXT", margin + 5, cursorY + 6.5);
-      doc.text("ETIQUETTE & TONE SCORECARD", margin + contentWidth / 2 + 4, cursorY + 6.5);
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.setTextColor(51, 65, 85);
-      doc.text(
-        toPdfSafeText(`Recipient: ${relationship}`),
-        margin + 5,
-        cursorY + 12.5
-      );
-      doc.text(
-        toPdfSafeText(`Situation: ${situation}`),
-        margin + 5,
-        cursorY + 17.5
-      );
+      doc.setFontSize(9.5);
       doc.text(
         toPdfSafeText(
-          `Channel: ${platform}${
-            courseOrRefCode ? `  |  Ref: ${courseOrRefCode}` : ""
+          `Recipient: ${professorName || relationship}   |   Context / Ref: ${
+            courseOrRefCode || "General"
           }`
         ),
-        margin + 5,
-        cursorY + 22.5
+        margin + 4,
+        y + 8
       );
 
-      const pScore = analysis.readiness_scorecard?.politeness_score ?? 94;
-      const cScore = analysis.readiness_scorecard?.clarity_score ?? 92;
+      const politenessScore =
+        analysis?.readiness_scorecard?.politeness_score ?? 97;
+      const clarityScore = analysis?.readiness_scorecard?.clarity_score ?? 94;
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(15, 118, 110);
       doc.text(
         toPdfSafeText(
-          `Politeness Score: ${pScore}/100  |  Clarity Score: ${cScore}/100`
+          `Etiquette Scorecard: Politeness ${politenessScore}/100  |  Clarity ${clarityScore}/100  |  Status: Safe to Send`
         ),
-        margin + contentWidth / 2 + 4,
-        cursorY + 12.5
-      );
-      doc.text(
-        toPdfSafeText(
-          `Tone Style: ${toneStyle}  |  Mood: ${writerMood}`
-        ),
-        margin + contentWidth / 2 + 4,
-        cursorY + 17.5
-      );
-      doc.text(
-        toPdfSafeText(`Output Language: ${outputLanguage}`),
-        margin + contentWidth / 2 + 4,
-        cursorY + 22.5
+        margin + 4,
+        y + 16
       );
 
-      cursorY += 32;
+      y += 31;
 
-      // 3. Subject Line Block (if Email or subject exists)
-      if (analysis.subject_line) {
-        const cleanSubject = toPdfSafeText(analysis.subject_line);
-        const subjLines = doc.splitTextToSize(
-          `Subject: ${cleanSubject}`,
-          contentWidth - 10
-        );
-        const subjBoxHeight = Math.max(12, subjLines.length * 5 + 6);
-
-        checkPageBreak(subjBoxHeight + 6);
-        doc.setFillColor(240, 253, 250); // Teal-50
-        doc.setDrawColor(153, 246, 228); // Teal-200
-        doc.roundedRect(margin, cursorY, contentWidth, subjBoxHeight, 2, 2, "FD");
+      // Subject Line Box (if Email)
+      if (platform === "Email" && analysis?.subject_line) {
+        doc.setFillColor(240, 253, 250);
+        doc.setDrawColor(153, 246, 228);
+        doc.roundedRect(margin, y, contentWidth, 14, 2, 2, "FD");
 
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
+        doc.setFontSize(9.5);
         doc.setTextColor(15, 118, 110);
-        doc.text(subjLines, margin + 5, cursorY + 7.5);
+        doc.text("SUBJECT LINE:", margin + 4, y + 8.5);
 
-        cursorY += subjBoxHeight + 6;
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(15, 23, 42);
+        const safeSubj = toPdfSafeText(analysis.subject_line);
+        doc.text(safeSubj.slice(0, 85), margin + 33, y + 8.5);
+        y += 20;
       }
 
-      // 4. Polished Message Section Header
-      checkPageBreak(20);
+      // Main Polished Message Section
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
       doc.setTextColor(15, 23, 42);
-      doc.text(
-        platform === "Email"
-          ? "POLISHED READY-TO-SEND EMAIL"
-          : "POLISHED READY-TO-SEND MESSAGE",
-        margin,
-        cursorY
+      doc.text("Polished Ready-to-Send Message:", margin, y);
+      y += 5;
+
+      const bodyText =
+        toPdfSafeText(displayedEmailBody) ||
+        toPdfSafeText(analysis?.polished_email || "");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10.5);
+      const wrappedBody: string[] = doc.splitTextToSize(
+        bodyText,
+        contentWidth - 10
       );
-      cursorY += 4;
+      const boxHeight = Math.max(40, wrappedBody.length * 5.4 + 10);
 
-      // 5. Polished Message Body Box
-      const cleanBodyText = toPdfSafeText(displayedEmailBody);
-      doc.setFont("times", "normal");
-      doc.setFontSize(11);
-      const bodyLines: string[] = doc.splitTextToSize(
-        cleanBodyText || "No message content available.",
-        contentWidth - 12
-      );
-
-      const lineHeight = 5.6;
-      const bodyBoxPadding = 8;
-
-      // Render paragraphs across pages if needed
-      doc.setDrawColor(148, 163, 184);
       doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(203, 213, 225);
+      doc.roundedRect(margin, y, contentWidth, boxHeight, 3, 3, "FD");
 
-      let lineIdx = 0;
-      while (lineIdx < bodyLines.length) {
-        const availableSpace = pageHeight - 24 - cursorY;
-        const maxLinesThisPage = Math.max(
-          1,
-          Math.floor((availableSpace - bodyBoxPadding * 2) / lineHeight)
-        );
-        const chunk = bodyLines.slice(lineIdx, lineIdx + maxLinesThisPage);
-        const boxHeight = chunk.length * lineHeight + bodyBoxPadding * 2;
+      doc.setTextColor(30, 41, 59);
+      doc.text(wrappedBody, margin + 5, y + 8);
+      y += boxHeight + 10;
 
-        doc.setFillColor(255, 255, 255);
-        doc.setDrawColor(203, 213, 225);
-        doc.roundedRect(margin, cursorY, contentWidth, boxHeight, 2, 2, "FD");
+      // Key Before & After Phrase Upgrades (if space allows)
+      if (
+        Array.isArray(analysis?.before_after_highlights) &&
+        analysis.before_after_highlights.length > 0 &&
+        y < pageHeight - 45
+      ) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10.5);
+        doc.setTextColor(15, 118, 110);
+        doc.text("Key Etiquette & Phrase Upgrades:", margin, y);
+        y += 5;
 
-        doc.setFont("times", "normal");
-        doc.setFontSize(11);
-        doc.setTextColor(15, 23, 42);
-        doc.text(chunk, margin + 6, cursorY + bodyBoxPadding + 3);
-
-        cursorY += boxHeight + 8;
-        lineIdx += maxLinesThisPage;
-
-        if (lineIdx < bodyLines.length) {
-          doc.addPage();
-          cursorY = 18;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        for (const item of analysis.before_after_highlights.slice(0, 2)) {
+          if (y > pageHeight - 25) break;
+          const lineText = toPdfSafeText(
+            `* Upgraded: "${item.polished_green}" (${item.reason})`
+          );
+          const lines = doc.splitTextToSize(lineText, contentWidth - 4);
+          doc.setTextColor(51, 65, 85);
+          doc.text(lines, margin + 2, y);
+          y += lines.length * 4.5 + 2;
         }
       }
 
-      // 6. Key Phrase Upgrades (Before & After Highlights)
-      if (analysis.sentence_upgrades && analysis.sentence_upgrades.length > 0) {
-        checkPageBreak(36);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10.5);
-        doc.setTextColor(15, 23, 42);
-        doc.text("KEY TONE & ETIQUETTE UPGRADES", margin, cursorY);
-        cursorY += 5;
-
-        analysis.sentence_upgrades.slice(0, 3).forEach((upg, idx) => {
-          const beforeLines = doc.splitTextToSize(
-            `Before: "${toPdfSafeText(upg.before_phrase)}"`,
-            contentWidth - 10
-          );
-          const afterLines = doc.splitTextToSize(
-            `After:  "${toPdfSafeText(upg.after_phrase)}"`,
-            contentWidth - 10
-          );
-          const whyLines = doc.splitTextToSize(
-            `Why:    ${toPdfSafeText(upg.why_it_works)}`,
-            contentWidth - 10
-          );
-          const itemHeight =
-            (beforeLines.length + afterLines.length + whyLines.length) * 4.4 + 7;
-
-          checkPageBreak(itemHeight + 4);
-
-          doc.setFillColor(248, 250, 252);
-          doc.setDrawColor(226, 232, 240);
-          doc.roundedRect(margin, cursorY, contentWidth, itemHeight, 1.5, 1.5, "FD");
-
-          let innerY = cursorY + 5;
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8.5);
-          doc.setTextColor(185, 28, 28); // Red-700
-          doc.text(beforeLines, margin + 5, innerY);
-          innerY += beforeLines.length * 4.4;
-
-          doc.setFont("helvetica", "bold");
-          doc.setTextColor(4, 120, 87); // Emerald-700
-          doc.text(afterLines, margin + 5, innerY);
-          innerY += afterLines.length * 4.4;
-
-          doc.setFont("helvetica", "italic");
-          doc.setTextColor(71, 85, 105);
-          doc.text(whyLines, margin + 5, innerY);
-
-          cursorY += itemHeight + 3.5;
-        });
-      }
-
-      // 7. Quick Pre-Send Safety Checklist Box
-      checkPageBreak(28);
-      cursorY += 2;
-      doc.setFillColor(236, 253, 245); // Emerald-50
-      doc.setDrawColor(167, 243, 208); // Emerald-200
-      doc.roundedRect(margin, cursorY, contentWidth, 24, 2, 2, "FD");
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9.5);
-      doc.setTextColor(6, 95, 70);
-      doc.text("PRE-SEND SAFETY CHECKLIST", margin + 5, cursorY + 6);
-
-      doc.setFont("helvetica", "normal");
+      // Footer
+      doc.setFont("helvetica", "italic");
       doc.setFontSize(8.5);
-      doc.setTextColor(6, 78, 59);
+      doc.setTextColor(100, 116, 139);
       doc.text(
-        `[${safetyChecklist.replacedBrackets ? "X" : " "}] Replaced bracketed placeholders such as [Your Name] and [Course ID]`,
-        margin + 5,
-        cursorY + 11.5
-      );
-      doc.text(
-        `[${safetyChecklist.officialEmailSelected ? "X" : " "}] Verified official school, university, or personal sender account`,
-        margin + 5,
-        cursorY + 16.5
-      );
-      doc.text(
-        `[${safetyChecklist.attachedDocuments ? "X" : " "}] Attached any required supporting documents (e.g., note, receipt, syllabus ref)`,
-        margin + 5,
-        cursorY + 21.5
+        "Generated by Say It Right: Universal & Student Communication Coach",
+        margin,
+        pageHeight - 10
       );
 
-      // 8. Footer on all pages
-      const totalPages = doc.getNumberOfPages();
-      for (let p = 1; p <= totalPages; p++) {
-        doc.setPage(p);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text(
-          `Generated by Say It Right Communication Coach  |  Page ${p} of ${totalPages}`,
-          pageWidth / 2,
-          pageHeight - 8,
-          { align: "center" }
-        );
-      }
-
-      const safeRelSlug = relationship
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_|_$/g, "");
-      doc.save(`SayItRight_${safeRelSlug || "message"}.pdf`);
-
+      doc.save("SayItRight_Polished_Message.pdf");
       setExportedPdfSuccess(true);
-      playAnxietyBusterChime();
       setTimeout(() => setExportedPdfSuccess(false), 3000);
-    } catch (_err) {
-      // Fallback if PDF generation encounters any unexpected environment issue
+    } catch {
       downloadTxtFile(
         "SayItRight_Polished_Message.txt",
         `${
-          platform === "Email" && analysis.subject_line
+          platform === "Email" && analysis?.subject_line
             ? `Subject: ${analysis.subject_line}\n\n`
             : ""
         }${displayedEmailBody}`
@@ -2162,38 +1750,42 @@ export default function App() {
         audioPlayerRef.current.pause();
         audioPlayerRef.current = null;
       }
-      if ("speechSynthesis" in window) {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
       setIsSpeaking(false);
       return;
     }
 
+    const clean = (textToSpeak || "").trim();
+    if (!clean) return;
     setIsSpeaking(true);
+
     try {
       const res = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: textToSpeak, persona }),
+        body: JSON.stringify({ text: clean, persona }),
       });
-      const data = await res.json();
-      if (data?.audioBase64) {
-        const audio = new Audio(`data:audio/wav;base64,${data.audioBase64}`);
-        audio.playbackRate = readAloudSpeed;
-        audioPlayerRef.current = audio;
-        audio.onended = () => setIsSpeaking(false);
-        audio.onerror = () => setIsSpeaking(false);
-        await audio.play();
-        return;
+      if (res.ok) {
+        const data = await res.json();
+        if (data.audioBase64) {
+          const audio = new Audio(`data:audio/mp3;base64,${data.audioBase64}`);
+          audioPlayerRef.current = audio;
+          audio.onended = () => setIsSpeaking(false);
+          audio.onerror = () => setIsSpeaking(false);
+          await audio.play();
+          return;
+        }
       }
-    } catch (_e) {}
+    } catch {
+      // Fallback to browser SpeechSynthesis
+    }
 
-    // Browser TTS Fallback if no API key or offline
-    if ("speechSynthesis" in window) {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.rate =
-        persona === "seniors" ? Math.min(0.9, readAloudSpeed) : readAloudSpeed;
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.rate = persona === "seniors" ? 0.9 : 1.0;
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
       window.speechSynthesis.speak(utterance);
@@ -2202,180 +1794,288 @@ export default function App() {
     }
   };
 
-  const baseVariantText =
-    analysis?.versions?.[selectedVariant] || analysis?.polished_email || "";
-
-  const formattedOutputText = formatOutputText(
-    baseVariantText,
-    outputTextFormat,
-    {
-      subjectLine: analysis?.subject_line || situation,
-      recipient:
-        professorName ||
-        (persona === "college_student" ? "Professor [Last Name]" : relationship),
-      sender: studentName || "[Your Name]",
-      courseOrRef: courseOrRefCode,
+  // Voice Note Recording ("Rant-to-Email")
+  useEffect(() => {
+    let timer: any;
+    if (isRecording) {
+      timer = setInterval(() => {
+        setRecordingSeconds((s) => s + 1);
+      }, 1000);
+    } else {
+      setRecordingSeconds(0);
     }
-  );
+    return () => clearInterval(timer);
+  }, [isRecording]);
 
-  const rawDisplayedEmailBody =
-    customEditedOutput !== null ? customEditedOutput : formattedOutputText;
+  const startVoiceRecording = async () => {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      recordedChunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) recordedChunksRef.current.push(e.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(recordedChunksRef.current, {
+          type: recorder.mimeType || "audio/webm",
+        });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = String(reader.result || "").split(",")[1] || "";
+          if (base64) {
+            handleGenerate({
+              audioBase64: base64,
+              audioMimeType: blob.type || "audio/webm",
+            });
+          }
+        };
+        reader.readAsDataURL(blob);
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setIsRecording(true);
+    } catch {
+      setIsRecording(false);
+    }
+  };
 
-  // Apply Subtle Emoji Placement Adapter when toggled on for informal/chat messages
-  const displayedEmailBody =
-    subtleEmojiEnhancer &&
-    (persona === "friendly_chat" ||
-      platform === "WhatsApp / Text Message" ||
-      INFORMAL_RELATIONSHIPS.includes(relationship)) &&
-    !/[🥺✨💛💖😊🤝☕]/.test(rawDisplayedEmailBody)
-      ? `${rawDisplayedEmailBody.trim()} 🥺✨`
-      : rawDisplayedEmailBody;
+  const stopVoiceRecording = () => {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
+      mediaRecorderRef.current.stop();
+    }
+    setIsRecording(false);
+  };
 
-  const liveRawCheck = calculateLiveRawProfessionalism(roughDraft);
-  const overthinkingRadar = analyzeOverthinkingRadar(roughDraft);
-  const showCoolOffPrompt =
-    writerMood === "Frustrated" ||
-    writerMood === "Angry / Heated" ||
-    overthinkingRadar.heatedYouAlwaysHits.length > 0;
-  const liveDetectedLanguage = detectInputLanguage(roughDraft);
-  const subjectLinesList =
-    analysis?.subject_lines && analysis.subject_lines.length > 0
-      ? analysis.subject_lines
-      : analysis?.subject_line
-      ? [analysis.subject_line]
-      : [];
+  // Simulate Recipient Reaction
+  const handleSimulateReaction = async () => {
+    setIsSimulatingReaction(true);
+    setShowReactionPanel(true);
+    try {
+      const res = await fetch("/api/simulate-reaction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          polishedEmail: displayedEmailBody,
+          relationship,
+          situation,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAnalysis((prev: any) => ({
+          ...prev,
+          professor_reactions: data,
+        }));
+      }
+    } catch {
+      // Keep existing reactions
+    } finally {
+      setIsSimulatingReaction(false);
+    }
+  };
 
-  const calmingBgClass =
-    persona === "school_kids" || calmingTheme === "cartoon_sunny"
-      ? "bg-amber-100/75 text-[#0F172A]"
-      : calmingTheme === "mint_green"
-      ? "bg-[#ECFDF5] text-[#0F172A]"
-      : calmingTheme === "warm_purple"
-      ? "bg-[#F5F3FF] text-[#0F172A]"
-      : "bg-[#EFF6FF] text-[#0F172A]";
+  // Global Keyboard Shortcuts Listener
+  const shortcutHandlersRef = useRef({
+    generate: () => handleGenerate(),
+    save: () => saveCurrentDraftToStorage(),
+    copy: () => copyMainOutput(),
+    exportPdf: () => downloadFormattedPdf(),
+    toggleDark: () => setDarkMode((d) => !d),
+    readAloud: () => toggleReadAloud(displayedEmailBody),
+  });
 
-  const politenessVal =
-    analysis?.readiness_scorecard?.politeness_score ?? 95;
-  const clarityVal =
-    analysis?.readiness_scorecard?.clarity_score ?? 91;
+  useEffect(() => {
+    shortcutHandlersRef.current = {
+      generate: () => handleGenerate(),
+      save: () => saveCurrentDraftToStorage(),
+      copy: () => copyMainOutput(),
+      exportPdf: () => downloadFormattedPdf(),
+      toggleDark: () => setDarkMode((d) => !d),
+      readAloud: () => toggleReadAloud(displayedEmailBody),
+    };
+  });
 
-  const getScoreColorMeta = (score: number) => {
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const isMod = e.ctrlKey || e.metaKey;
+      const keyLower = e.key.toLowerCase();
+
+      if (e.key === "Escape" && showShortcutsModal) {
+        e.preventDefault();
+        setShowShortcutsModal(false);
+        return;
+      }
+
+      // Ctrl+Enter or Cmd+Enter -> Generate Polished Draft
+      if (isMod && e.key === "Enter") {
+        e.preventDefault();
+        triggerShortcutToast("⚡ Shortcut: Polishing your message...");
+        shortcutHandlersRef.current.generate();
+        return;
+      }
+
+      // Ctrl+S or Cmd+S -> Save Draft
+      if (isMod && !e.shiftKey && keyLower === "s") {
+        e.preventDefault();
+        shortcutHandlersRef.current.save();
+        triggerShortcutToast("💾 Shortcut: Draft saved to browser!");
+        return;
+      }
+
+      // Ctrl+Shift+C or Cmd+Shift+C -> Copy Polished Message
+      if (isMod && e.shiftKey && keyLower === "c") {
+        e.preventDefault();
+        shortcutHandlersRef.current.copy();
+        triggerShortcutToast("📋 Shortcut: Copied polished message!");
+        return;
+      }
+
+      // Ctrl+Shift+E or Cmd+Shift+E -> Export PDF
+      if (isMod && e.shiftKey && keyLower === "e") {
+        e.preventDefault();
+        shortcutHandlersRef.current.exportPdf();
+        triggerShortcutToast("📄 Shortcut: Exporting formatted PDF...");
+        return;
+      }
+
+      // Alt+D -> Toggle Dark Mode
+      if (e.altKey && keyLower === "d") {
+        e.preventDefault();
+        shortcutHandlersRef.current.toggleDark();
+        triggerShortcutToast("🌙 Shortcut: Toggled Dark / Light Theme!");
+        return;
+      }
+
+      // Alt+R -> Toggle Read Aloud
+      if (e.altKey && keyLower === "r") {
+        e.preventDefault();
+        shortcutHandlersRef.current.readAloud();
+        triggerShortcutToast("🔊 Shortcut: Toggled Read Aloud Audio!");
+        return;
+      }
+
+      // Ctrl+/ or Cmd+/ -> Toggle Keyboard Shortcuts Modal
+      if (isMod && e.key === "/") {
+        e.preventDefault();
+        setShowShortcutsModal((prev) => !prev);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [showShortcutsModal]);
+
+  // Scores & Achievement Badges Calculation
+  const politenessScore =
+    analysis?.readiness_scorecard?.politeness_score ?? 97;
+  const clarityScore = analysis?.readiness_scorecard?.clarity_score ?? 94;
+  const rawScore =
+    analysis?.readiness_scorecard?.raw_professionalism_score ?? 45;
+
+  const getScoreColorBadge = (score: number) => {
     if (score >= 80) {
       return {
-        ringStroke: "#059669",
-        barClass: "bg-emerald-600",
-        badgeClass: "bg-emerald-100 text-emerald-900 border-emerald-300",
-        statusText: "🟢 Safe & Polished",
+        ring: "#10B981",
+        bg: "bg-emerald-50 border-emerald-300 text-emerald-900",
+        bar: "bg-emerald-500",
+        label: "🟢 Safe & Effective",
       };
     }
     if (score >= 55) {
       return {
-        ringStroke: "#D97706",
-        barClass: "bg-amber-500",
-        badgeClass: "bg-amber-100 text-amber-900 border-amber-300",
-        statusText: "🟡 Review Suggested",
+        ring: "#F59E0B",
+        bg: "bg-amber-50 border-amber-300 text-amber-900",
+        bar: "bg-amber-500",
+        label: "🟡 Review Suggested",
       };
     }
     return {
-      ringStroke: "#DC2626",
-      barClass: "bg-red-600",
-      badgeClass: "bg-red-100 text-red-900 border-red-300",
-      statusText: "🔴 Risky / Needs Polish",
+      ring: "#EF4444",
+      bg: "bg-rose-50 border-rose-300 text-rose-900",
+      bar: "bg-rose-500",
+      label: "🔴 Risky / Emotional",
     };
   };
 
-  const politenessMeta = getScoreColorMeta(politenessVal);
-  const clarityMeta = getScoreColorMeta(clarityVal);
-  const rawScoreMeta = getScoreColorMeta(liveRawCheck.score);
-
-  const earnedBadges = [
+  const achievementBadges = [
     {
-      id: "no_passive_aggression",
+      id: "no_passive",
       icon: "🛡️",
       label: "No Passive-Aggression",
-      desc: "Zero blaming or defensive friction markers",
-      active: politenessVal >= 80,
+      earned: overthinkingMetrics.passiveAggressiveHits.length === 0,
+      desc: "Warm, blame-free phrasing",
     },
     {
       id: "clear_subject",
       icon: "✨",
       label: "Clear Subject Line",
-      desc: "Includes course/context tag & specific request",
-      active: Boolean(analysis?.subject_line),
+      earned: Boolean(analysis?.subject_line),
+      desc: "Includes context & topic",
     },
     {
       id: "direct_respectful",
       icon: "🎯",
       label: "Direct & Respectful",
-      desc: "Clear next step without rambling",
-      active: clarityVal >= 80,
+      earned: politenessScore >= 85 && clarityScore >= 85,
+      desc: `${politenessScore}/100 politeness & ${clarityScore}/100 clarity`,
     },
     {
-      id: "empathy_accountability",
-      icon: "💎",
-      label: "Solution-First Framing",
-      desc: "Proposes a concrete, low-friction plan",
-      active: true,
+      id: "confident_advocacy",
+      icon: "💪",
+      label: "Apology-Free Confidence",
+      earned: apologyStripper,
+      desc: "Swapped 'sorry to bother' for gratitude",
     },
-    ...(apologyStripper
-      ? [
-          {
-            id: "apology_free",
-            icon: "🌟",
-            label: "Gratitude Over Guilt",
-            desc: "Swapped excessive 'sorry' for confident thank-you",
-            active: true,
-          },
-        ]
-      : []),
   ];
 
-  const completedSafetyCount = [
-    safetyChecklist.replacedBrackets,
-    safetyChecklist.officialEmailSelected,
-    safetyChecklist.attachedDocuments,
-  ].filter(Boolean).length;
+  // Calming Anxiety-Buster Pastel Background according to persona & mood
+  const calmingRootBgClass = darkMode
+    ? "bg-slate-950 text-slate-100"
+    : persona === "school_kids"
+    ? "bg-gradient-to-br from-sky-200 via-amber-100 to-pink-200 text-slate-900"
+    : writerMood === "Anxious / Stressed"
+    ? "bg-gradient-to-br from-sky-50 via-teal-50/70 to-emerald-50/80 text-slate-900"
+    : writerMood === "Frustrated" || writerMood === "Angry / Heated"
+    ? "bg-gradient-to-br from-purple-50/80 via-sky-50 to-teal-50/70 text-slate-900"
+    : "bg-gradient-to-br from-teal-50/60 via-slate-50 to-indigo-50/60 text-slate-900";
 
   return (
     <div
-      className={`min-h-screen relative flex flex-col transition-colors duration-300 ${calmingBgClass} ${
-        seniorLargeText ? "text-lg leading-relaxed" : "text-base"
+      className={`min-h-screen transition-colors duration-300 relative overflow-x-hidden ${calmingRootBgClass} ${
+        largeTextMode ? "text-lg" : "text-base"
       }`}
     >
-      {/* Full-Screen Animated Cartoon Pictures Scrolling in the Backside for Kids Mode */}
+      {/* Cartoon Kids Scrolling Backdrop (when Kids mode is active) */}
       {persona === "school_kids" && <KidsCartoonBackdrop />}
 
-      {/* 2. MICRO-INTERACTIONS & CELEBRATION ANIMATIONS OVERLAY (Balloons / Snow / Confetti) */}
-      {celebrationEffect && (
-        <div
-          aria-hidden="true"
-          className="fixed inset-0 pointer-events-none z-50 overflow-hidden"
-        >
-          {Array.from({ length: 18 }).map((_, idx) => {
-            const leftPct = (idx * 6) % 96;
-            const delayMs = (idx % 6) * 180;
-            const balloonItems = ["🎈", "🎈", "🎉", "⭐", "🎈", "✨"];
-            const snowItems = ["❄️", "❅", "✨", "❄️", "🌟", "❅"];
-            const confettiItems = ["🎉", "🎊", "✨", "🌟", "🏆", "💫"];
+      {/* Anxiety-Buster Celebration Overlay (Confetti / Balloons / Snow) */}
+      {celebrationType !== "none" && (
+        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+          {Array.from({ length: 22 }).map((_, i) => {
+            const left = `${(i * 17) % 96}%`;
+            const delay = `${(i % 7) * 0.15}s`;
             const symbol =
-              celebrationEffect === "balloons"
-                ? balloonItems[idx % balloonItems.length]
-                : celebrationEffect === "snow"
-                ? snowItems[idx % snowItems.length]
-                : confettiItems[idx % confettiItems.length];
-
+              celebrationType === "balloons"
+                ? ["🎈", "🌟", "🎉", "🦸‍♂️", "✨"][i % 5]
+                : celebrationType === "snow"
+                ? ["❄️", "✨", "🕊️", "💠"][i % 4]
+                : ["🎉", "✨", "🌟", "💚", "🎊"][i % 5];
+            const animClass =
+              celebrationType === "balloons"
+                ? "animate-balloon-rise"
+                : celebrationType === "snow"
+                ? "animate-snow-fall"
+                : "animate-confetti-fall";
             return (
               <div
-                key={idx}
-                style={{
-                  left: `${leftPct}%`,
-                  animationDelay: `${delayMs}ms`,
-                }}
-                className={`absolute text-3xl sm:text-4xl select-none ${
-                  celebrationEffect === "balloons"
-                    ? "animate-balloon-rise bottom-0"
-                    : "animate-snow-fall top-0"
-                }`}
+                key={i}
+                style={{ left, animationDelay: delay }}
+                className={`absolute text-2xl select-none ${animClass}`}
               >
                 {symbol}
               </div>
@@ -2383,3226 +2083,1705 @@ export default function App() {
           })}
         </div>
       )}
-      {/* Top Bar Contract: Zone 1 (Single Brand Wordmark) — Zone 2 (Clean Text Nav Links) — Zone 3 (Primary Actions) */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 px-6 py-3.5 flex items-center justify-between">
-        <a
-          href="#top"
-          onClick={(e) => {
-            e.preventDefault();
-          }}
-          className="font-display text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap"
-        >
-          Say It Right
-        </a>
 
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-          <button
-            type="button"
-            onClick={() => handleSelectPersona("college_student")}
-            className={`hover:text-slate-900 transition-colors whitespace-nowrap py-1 border-b-2 cursor-pointer ${
-              persona === "college_student"
-                ? "border-teal-700 text-slate-900 font-semibold"
-                : "border-transparent"
-            }`}
-          >
-            College Students
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSelectPersona("seniors")}
-            className={`hover:text-slate-900 transition-colors whitespace-nowrap py-1 border-b-2 cursor-pointer ${
-              persona === "seniors"
-                ? "border-teal-700 text-slate-900 font-semibold"
-                : "border-transparent"
-            }`}
-          >
-            Seniors &amp; Elders
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSelectPersona("school_kids")}
-            className={`transition-all whitespace-nowrap px-2.5 py-1 rounded-full cursor-pointer flex items-center gap-1 ${
-              persona === "school_kids"
-                ? "bg-amber-400 text-slate-950 font-extrabold border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]"
-                : "bg-amber-100/80 text-amber-950 font-bold hover:bg-amber-200 border border-amber-300"
-            }`}
-          >
-            <span>🎨 Kids Cartoon Zone</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSelectPersona("women_advocacy")}
-            className={`hover:text-slate-900 transition-colors whitespace-nowrap py-1 border-b-2 cursor-pointer ${
-              persona === "women_advocacy"
-                ? "border-teal-700 text-slate-900 font-semibold"
-                : "border-transparent"
-            }`}
-          >
-            Women &amp; Self-Advocacy
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSelectPersona("friendly_chat")}
-            className={`hover:text-slate-900 transition-colors whitespace-nowrap py-1 border-b-2 cursor-pointer ${
-              persona === "friendly_chat"
-                ? "border-teal-700 text-slate-900 font-semibold"
-                : "border-transparent"
-            }`}
-          >
-            Friendly Chat
-          </button>
-        </nav>
+      {/* Global Keyboard Shortcut Toast Banner */}
+      {shortcutToast && (
+        <div className="fixed top-20 right-5 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl border border-teal-400/50 flex items-center gap-2 text-xs font-bold animate-bounce">
+          <Keyboard className="w-4 h-4 text-teal-300" />
+          <span>{shortcutToast}</span>
+        </div>
+      )}
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setEasySimpleLayout((prev) => !prev)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
-              easySimpleLayout
-                ? "bg-teal-700 border-teal-700 text-white"
-                : "bg-teal-50 border-teal-300 text-teal-950 hover:bg-teal-100"
-            }`}
-            title="Switch between Simple Easy View (great for Kids & Seniors) and Full Detailed View"
-          >
-            <Smile className="w-3.5 h-3.5" />
-            <span>
-              {easySimpleLayout ? "✓ Simple View On" : "Simple View (All Ages)"}
-            </span>
-          </button>
+      {/* Keyboard Shortcuts Cheat-Sheet Modal */}
+      {showShortcutsModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-2">
+                <Keyboard className="w-5 h-5 text-teal-600" />
+                <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">
+                  Power-User Keyboard Shortcuts
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowShortcutsModal(false)}
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-          <button
-            type="button"
-            onClick={() => setSeniorLargeText((prev) => !prev)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
-              seniorLargeText
-                ? "bg-teal-50 border-teal-700 text-teal-900"
-                : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            <TypeIcon className="w-3.5 h-3.5" />
-            <span>{seniorLargeText ? "Standard Text" : "Large Text"}</span>
-          </button>
+            <div className="mt-4 space-y-2.5 text-sm">
+              {[
+                {
+                  keys: "Ctrl + Enter (or ⌘ + Enter)",
+                  desc: "Generate & Polish Draft immediately",
+                },
+                {
+                  keys: "Ctrl + S (or ⌘ + S)",
+                  desc: "Save current draft & settings to browser",
+                },
+                {
+                  keys: "Ctrl + Shift + C",
+                  desc: "Copy polished ready-to-send message",
+                },
+                {
+                  keys: "Ctrl + Shift + E",
+                  desc: "Export polished message as formatted PDF",
+                },
+                {
+                  keys: "Alt + D",
+                  desc: "Toggle Dark Mode / Light Mode theme",
+                },
+                {
+                  keys: "Alt + R",
+                  desc: "Read polished message aloud (Voice Preview)",
+                },
+                {
+                  keys: "Ctrl + /",
+                  desc: "Open or close this Shortcuts Guide",
+                },
+              ].map((sc) => (
+                <div
+                  key={sc.keys}
+                  className="flex items-center justify-between py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700"
+                >
+                  <span className="text-slate-700 dark:text-slate-200 font-medium">
+                    {sc.desc}
+                  </span>
+                  <kbd className="px-2.5 py-1 text-xs font-mono font-bold bg-white dark:bg-slate-900 text-teal-700 dark:text-teal-300 border border-slate-300 dark:border-slate-600 rounded-md shadow-2xs">
+                    {sc.keys}
+                  </kbd>
+                </div>
+              ))}
+            </div>
 
-          {analysis && (
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowShortcutsModal(false)}
+                className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold cursor-pointer"
+              >
+                Got It! (Esc)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TOP NAVIGATION HEADER */}
+      <header className="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+          {/* Brand Identity */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-teal-700 text-white flex items-center justify-center font-bold shadow-xs">
+              <HeartHandshake className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="font-bold text-lg sm:text-xl tracking-tight text-slate-900 dark:text-white">
+                  Say It Right
+                </h1>
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200">
+                  Universal &amp; Student Coach
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Follow 3 easy steps: <strong className="text-teal-700 dark:text-teal-300">1. Choose Who</strong> →{" "}
+                <strong className="text-teal-700 dark:text-teal-300">2. Write or Speak</strong> →{" "}
+                <strong className="text-teal-700 dark:text-teal-300">3. Copy or Export PDF</strong>
+              </p>
+            </div>
+          </div>
+
+          {/* Right Accessibility, Sound, Shortcuts & Dark Mode Controls */}
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() =>
-                downloadTxtFile(
-                  "professor_email.txt",
-                  `${
-                    platform === "Email"
-                      ? `Subject: ${analysis.subject_line}\n\n`
-                      : ""
-                  }${displayedEmailBody}`
-                )
-              }
-              className="hidden sm:flex px-3.5 py-1.5 text-xs font-semibold text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap items-center gap-1.5 cursor-pointer"
+              onClick={() => setSimpleViewMode((v) => !v)}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                simpleViewMode
+                  ? "bg-teal-700 text-white border-teal-700"
+                  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300"
+              }`}
+              title="Hides extra coaching cards so the page is ultra-simple for any age"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download (.txt)</span>
+              <Smile className="w-3.5 h-3.5" />
+              <span>{simpleViewMode ? "Simple View: ON" : "Simple View (All Ages)"}</span>
             </button>
-          )}
+
+            <button
+              type="button"
+              onClick={() => setLargeTextMode((v) => !v)}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                largeTextMode
+                  ? "bg-teal-700 text-white border-teal-700"
+                  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300"
+              }`}
+              title="Increases font size for Seniors, Kids, and easier reading"
+            >
+              <TypeIcon className="w-3.5 h-3.5" />
+              <span>{largeTextMode ? "Large Text: ON" : "Large Text"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSoundEffectsEnabled((s) => !s)}
+              className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
+                soundEffectsEnabled
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                  : "bg-slate-100 text-slate-600 border-slate-300"
+              }`}
+              title="Toggle calming Anxiety-Buster chime sounds"
+            >
+              {soundEffectsEnabled ? (
+                <Volume2 className="w-3.5 h-3.5 text-emerald-600" />
+              ) : (
+                <VolumeX className="w-3.5 h-3.5" />
+              )}
+              <span className="hidden md:inline">Calm Audio</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowShortcutsModal(true)}
+              className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="View Power-User Global Keyboard Shortcuts (Ctrl+/)"
+            >
+              <Keyboard className="w-3.5 h-3.5 text-teal-700" />
+              <span className="hidden sm:inline">Shortcuts</span>
+              <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-white border border-slate-300 rounded">
+                Ctrl+/
+              </kbd>
+            </button>
+
+            {/* Dark Mode Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setDarkMode((d) => !d)}
+              aria-label="Toggle Dark Mode"
+              title="Switch between Light and Dark theme (Alt+D)"
+              className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                darkMode
+                  ? "bg-amber-400/20 text-amber-300 border-amber-400/50 hover:bg-amber-400/30"
+                  : "bg-slate-900 text-white border-slate-900 hover:bg-slate-800"
+              }`}
+            >
+              {darkMode ? (
+                <>
+                  <Sun className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Light Mode</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-3.5 h-3.5 text-sky-300" />
+                  <span>Dark Mode</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Audience Mode Selector Bar */}
+        <div className="bg-slate-50/90 dark:bg-slate-900/80 border-t border-slate-200/80 dark:border-slate-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center gap-2 overflow-x-auto">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 shrink-0">
+              Who is writing?
+            </span>
+            {(Object.keys(PERSONA_CONFIGS) as PersonaId[]).map((pid) => {
+              const cfg = PERSONA_CONFIGS[pid];
+              const isSelected = persona === pid;
+              return (
+                <button
+                  key={pid}
+                  type="button"
+                  onClick={() => handleSelectPersona(pid)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                    isSelected
+                      ? pid === "school_kids"
+                        ? "bg-amber-400 text-slate-950 border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]"
+                        : "bg-teal-700 text-white shadow-xs"
+                      : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-300"
+                  }`}
+                >
+                  {pid === "college_student" && (
+                    <GraduationCap className="w-3.5 h-3.5" />
+                  )}
+                  {pid === "seniors" && <UserCheck className="w-3.5 h-3.5" />}
+                  {pid === "school_kids" && (
+                    <Sparkles className="w-3.5 h-3.5" />
+                  )}
+                  {pid === "women_advocacy" && (
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                  )}
+                  {pid === "friendly_chat" && (
+                    <MessageCircleHeart className="w-3.5 h-3.5" />
+                  )}
+                  <span>{cfg.shortLabel}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </header>
 
-      {/* MAIN INTERACTIVE COACHING WORKSPACE */}
-      <div className="relative z-10 flex-1 flex flex-col lg:flex-row max-w-[1440px] w-full mx-auto">
-        {/* LEFT SIDEBAR: Tone Selector, Quick-Fill Presets, Recipient/Situation, Inclusive Modes */}
-        <aside
-          className={`w-full lg:w-[360px] shrink-0 border-b lg:border-b-0 lg:border-r p-5 space-y-5 transition-colors ${
-            persona === "school_kids"
-              ? "bg-white/85 backdrop-blur-xs border-slate-900/20"
-              : "bg-white border-slate-200"
-          }`}
-        >
-          {/* 1. AI Model / Tone Selector + Writer Expression / Mood Selector (Sidebar) */}
-          <div className="space-y-3">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xs font-semibold text-slate-900">
-                  1. AI Tone Selector
-                </h2>
-                <span className="text-[11px] text-teal-800 font-medium">
-                  {toneStyle}
-                </span>
+      {/* MAIN WORKSPACE CONTAINER */}
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {/* CARTOON KIDS CLUBHOUSE BANNER & PARADE STRIP (When School Kids Mode is Active) */}
+        {persona === "school_kids" && (
+          <section className="space-y-4">
+            <div className="rounded-3xl bg-gradient-to-r from-amber-300 via-yellow-200 to-pink-300 border-4 border-slate-900 p-5 shadow-[6px_6px_0px_0px_#0f172a]">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-white border-3 border-slate-900 flex items-center justify-center text-3xl shadow-[3px_3px_0px_0px_#0f172a]">
+                    🦸‍♂️
+                  </div>
+                  <div>
+                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-pink-500 text-white border-2 border-slate-900">
+                      🎨 CARTOON KIDS CLUBHOUSE
+                    </span>
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-slate-950 mt-0.5">
+                      {currentPersonaConfig.fullTitle}
+                    </h2>
+                    <p className="text-xs sm:text-sm font-bold text-slate-800">
+                      {kidMascotCheer}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-3 border-slate-900 shadow-[3px_3px_0px_0px_#0f172a]">
+                  <span className="text-2xl">⭐</span>
+                  <div>
+                    <p className="text-[10px] font-extrabold uppercase text-slate-600">
+                      Polite Hero Stars
+                    </p>
+                    <p className="text-lg font-extrabold text-amber-600">
+                      {kidGoldStars} Gold Stars!
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-1.5">
-                {(
-                  [
-                    "Ultra Formal",
-                    "Polite & Direct",
-                    "Apologetic",
-                    "Persuasive",
-                  ] as ToneOption[]
-                ).map((tOption) => (
+            </div>
+
+            <KidsCartoonParadeStrip
+              onTapCartoonCard={(cheer) => {
+                setKidMascotCheer(cheer);
+                setKidGoldStars((s) => s + 1);
+                playFeedbackSound("kid_star");
+              }}
+            />
+          </section>
+        )}
+
+        {/* SCENARIO CARDS & ONE-CLICK "CRISIS STARTERS" */}
+        <section className="bg-white/95 dark:bg-slate-900/95 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-teal-600" />
+                <span>
+                  One-Click &ldquo;Crisis Starter&rdquo; Scenario Cards (Frozen? Pick a
+                  Situation Below!)
+                </span>
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Click any stressful student or school scenario card to load a
+                ready-to-polish draft immediately.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Kids & Teens Crisis Starters */}
+            <div className="rounded-xl bg-amber-50/70 dark:bg-slate-800/70 border border-amber-200 dark:border-slate-700 p-3">
+              <p className="text-xs font-extrabold uppercase tracking-wider text-amber-900 dark:text-amber-300 mb-2">
+                🎒 For Kids &amp; Teens
+              </p>
+              <div className="grid grid-cols-1 gap-2">
+                {CRISIS_STARTER_CARDS.filter(
+                  (c) => c.group === "kids_teens"
+                ).map((card) => (
                   <button
-                    key={tOption}
+                    key={card.id}
                     type="button"
                     onClick={() => {
-                      setToneStyle(tOption);
-                      handleGenerate({ toneOverride: tOption });
+                      setPersona(card.persona);
+                      setRelationship(card.relationship);
+                      setSituation(card.situation);
+                      setCourseOrRefCode(card.courseOrRef);
+                      setRoughDraft(card.draft);
+                      handleGenerate({
+                        draftOverride: card.draft,
+                        personaOverride: card.persona,
+                        relationshipOverride: card.relationship,
+                        situationOverride: card.situation,
+                        courseOverride: card.courseOrRef,
+                      });
                     }}
-                    className={`px-3 py-2 rounded-lg text-xs font-medium border text-left transition-colors whitespace-nowrap truncate cursor-pointer ${
-                      toneStyle === tOption
-                        ? "bg-slate-900 border-slate-900 text-white"
-                        : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
-                    }`}
+                    className="w-full text-left p-2.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-amber-100/60 border border-amber-300/80 dark:border-slate-700 transition-all flex items-center justify-between gap-2 cursor-pointer"
                   >
-                    {tOption}
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="text-xl shrink-0">{card.emoji}</span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                          {card.title}
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                          {card.subtitle}
+                        </p>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-amber-700 shrink-0" />
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Writer Expression / Mood Selector */}
-            <div className="pt-2 border-t border-slate-100 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="writer-mood-select"
-                  className="text-xs font-semibold text-slate-900"
-                >
-                  Writer Expression / Mood
-                </label>
-                <span className="text-[11px] text-teal-800 font-medium">
-                  {writerMood}
-                </span>
-              </div>
-              <select
-                id="writer-mood-select"
-                value={writerMood}
-                onChange={(e) => {
-                  const nextMood = e.target.value as WriterMoodOption;
-                  setWriterMood(nextMood);
-                  handleGenerate({ moodOverride: nextMood });
-                }}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-teal-700 focus:outline-none"
-              >
-                {WRITER_MOOD_OPTIONS.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
-              <p className="text-[11px] text-slate-500 leading-tight">
-                {
-                  WRITER_MOOD_OPTIONS.find((m) => m.value === writerMood)
-                    ?.hint
-                }
+            {/* College Students Crisis Starters */}
+            <div className="rounded-xl bg-teal-50/70 dark:bg-slate-800/70 border border-teal-200 dark:border-slate-700 p-3">
+              <p className="text-xs font-extrabold uppercase tracking-wider text-teal-900 dark:text-teal-300 mb-2">
+                🎓 For College Students
               </p>
-            </div>
-          </div>
-
-          {/* 5. Presets / Quick-Fill Examples in Sidebar */}
-          <div className="space-y-2 border-t border-slate-200 pt-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold text-slate-900">
-                2. Quick-Fill Demo Presets
-              </h2>
-              <span className="text-[11px] text-slate-500">1-Click Load</span>
-            </div>
-            <div className="space-y-1.5">
-              {currentPersona.presets.map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => handleLoadPreset(preset)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white hover:border-teal-700 hover:bg-teal-50/40 text-left text-xs font-medium text-slate-800 transition-colors flex items-center justify-between group cursor-pointer"
-                >
-                  <span className="truncate">{preset.buttonLabel}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-teal-700 shrink-0" />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 3. Professor Relationship, Situation & Personalization */}
-          <div className="space-y-3 border-t border-slate-200 pt-4">
-            <h2 className="text-xs font-semibold text-slate-900">
-              3. Recipient &amp; Situation Setup
-            </h2>
-
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">
-                Select Recipient Relationship (Academic, Formal &amp; Personal)
-              </label>
-              <select
-                value={relationship}
-                onChange={(e) => {
-                  const nextRel = e.target.value;
-                  setRelationship(nextRel);
-                  const isPersonal = INFORMAL_RELATIONSHIPS.includes(nextRel);
-                  const nextPlat: PlatformOption = isPersonal
-                    ? "WhatsApp / Text Message"
-                    : platform;
-                  if (isPersonal && platform === "Email") {
-                    setPlatform("WhatsApp / Text Message");
-                  }
-                  handleGenerate({
-                    relOverride: nextRel,
-                    platformOverride: nextPlat,
-                  });
-                }}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-teal-700 focus:outline-none"
-              >
-                <optgroup label={`${currentPersona.shortLabel} Recipients`}>
-                  {currentPersona.relationships.map((rel) => (
-                    <option key={rel} value={rel}>
-                      {rel}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="Informal & Personal Relationships">
-                  {INFORMAL_RELATIONSHIPS.map((rel) => (
-                    <option key={rel} value={rel}>
-                      {rel}
-                    </option>
-                  ))}
-                </optgroup>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">
-                Select Situation Type
-              </label>
-              <select
-                value={situation}
-                onChange={(e) => {
-                  setSituation(e.target.value);
-                  handleGenerate({ sitOverride: e.target.value });
-                }}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-teal-700 focus:outline-none"
-              >
-                <optgroup label={`${currentPersona.shortLabel} Situations`}>
-                  {currentPersona.situations.map((sit) => (
-                    <option key={sit} value={sit}>
-                      {sit}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="Personal & Informal Situations">
-                  {INFORMAL_SITUATIONS.map((sit) => (
-                    <option key={sit} value={sit}>
-                      {sit}
-                    </option>
-                  ))}
-                </optgroup>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">
-                {currentPersona.defaultCourseLabel}
-              </label>
-              <input
-                type="text"
-                value={courseOrRefCode}
-                onChange={(e) => setCourseOrRefCode(e.target.value)}
-                placeholder={currentPersona.defaultCoursePlaceholder}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-teal-700 focus:outline-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-[11px] font-medium text-slate-600 mb-1">
-                  Recipient Name
-                </label>
-                <input
-                  type="text"
-                  value={professorName}
-                  onChange={(e) => setProfessorName(e.target.value)}
-                  placeholder={currentPersona.recipientPlaceholder}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-teal-700 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-medium text-slate-600 mb-1">
-                  Your Name / ID
-                </label>
-                <input
-                  type="text"
-                  value={studentName}
-                  onChange={(e) => setStudentName(e.target.value)}
-                  placeholder={currentPersona.senderPlaceholder}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-teal-700 focus:outline-none"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 4. Audience Mode Switcher (College, Seniors, Kids, Women) */}
-          <div className="space-y-2 border-t border-slate-200 pt-4">
-            <h2 className="text-xs font-semibold text-slate-900">
-              4. Inclusive Audience Modes
-            </h2>
-            <div className="grid grid-cols-2 gap-1.5">
-              <button
-                type="button"
-                onClick={() => handleSelectPersona("college_student")}
-                className={`p-2 rounded-lg border text-left transition-colors cursor-pointer ${
-                  persona === "college_student"
-                    ? "bg-teal-50/80 border-teal-700 text-teal-950"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center gap-1.5 font-semibold text-xs">
-                  <GraduationCap className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-                  <span className="truncate">College Student</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPersona("seniors")}
-                className={`p-2 rounded-lg border text-left transition-colors cursor-pointer ${
-                  persona === "seniors"
-                    ? "bg-teal-50/80 border-teal-700 text-teal-950"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center gap-1.5 font-semibold text-xs">
-                  <HeartHandshake className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-                  <span className="truncate">Seniors &amp; Elders</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPersona("school_kids")}
-                className={`p-2 rounded-lg border text-left transition-colors cursor-pointer ${
-                  persona === "school_kids"
-                    ? "bg-teal-50/80 border-teal-700 text-teal-950"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center gap-1.5 font-semibold text-xs">
-                  <Smile className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-                  <span className="truncate">School Kids</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPersona("women_advocacy")}
-                className={`p-2 rounded-lg border text-left transition-colors cursor-pointer ${
-                  persona === "women_advocacy"
-                    ? "bg-teal-50/80 border-teal-700 text-teal-950"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center gap-1.5 font-semibold text-xs">
-                  <ShieldCheck className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-                  <span className="truncate">Self-Advocacy</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPersona("friendly_chat")}
-                className={`col-span-2 p-2 rounded-lg border text-left transition-colors cursor-pointer ${
-                  persona === "friendly_chat"
-                    ? "bg-teal-50/80 border-teal-700 text-teal-950"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-1.5 font-semibold text-xs">
-                  <div className="flex items-center gap-1.5">
-                    <MessageCircleHeart className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-                    <span className="truncate">
-                      Friendly Chat (Friends, Partner &amp; General)
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-medium text-teal-800 bg-teal-100/70 px-1.5 py-0.5 rounded">
-                    New
-                  </span>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* 5. Boosters & Language */}
-          <div className="space-y-2.5 border-t border-slate-200 pt-4">
-            <label className="flex items-start gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={apologyStripper}
-                onChange={(e) => setApologyStripper(e.target.checked)}
-                className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-teal-700"
-              />
-              <span className="text-xs text-slate-700 leading-tight">
-                <strong className="text-slate-900">Apology-Stripper:</strong>{" "}
-                Swap unnecessary &ldquo;sorry&rdquo; for gratitude
-              </span>
-            </label>
-
-            <label className="flex items-start gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={simplifyLanguage}
-                onChange={(e) => setSimplifyLanguage(e.target.checked)}
-                className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-teal-700"
-              />
-              <span className="text-xs text-slate-700 leading-tight">
-                <strong className="text-slate-900">Plain-Language Mode:</strong>{" "}
-                Extra simple for kids &amp; seniors
-              </span>
-            </label>
-
-            <div className="pt-1">
-              <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 mb-1">
-                <Globe className="w-3.5 h-3.5 text-teal-700" />
-                <span>Language / Output Style (Global &amp; Romanized)</span>
-              </label>
-              <select
-                value={targetLanguage}
-                onChange={(e) => {
-                  setTargetLanguage(e.target.value);
-                  handleGenerate({ langOverride: e.target.value });
-                }}
-                className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs text-slate-900 focus:border-teal-700 focus:outline-none"
-              >
-                {LANGUAGE_AND_SCRIPT_GROUPS.map((group) => (
-                  <optgroup key={group.groupLabel} label={group.groupLabel}>
-                    {group.options.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-              <p className="text-[11px] text-slate-500 mt-1 leading-tight">
-                Supports native scripts &amp; Romanized mother-tongue typing (Hinglish, Tanglish, Tenglish).
-              </p>
-            </div>
-          </div>
-        </aside>
-
-        {/* MAIN CONTENT STAGE */}
-        <main className="flex-1 p-6 lg:p-8 space-y-6 overflow-y-auto">
-          {/* Header & Platform Toggle: [ Email | WhatsApp / Text Message | Slack / Discord ] */}
-          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-slate-200 pb-5">
-            <div>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mb-1">
-                <span>{currentPersona.shortLabel} Mode</span>
-                <span aria-hidden="true">·</span>
-                <span>Mood: {writerMood}</span>
-                <span aria-hidden="true">·</span>
-                <span>Tone: {toneStyle}</span>
-                <span aria-hidden="true">·</span>
-                <span>Channel: {platform}</span>
-                <span aria-hidden="true">·</span>
-                <span>Language: {targetLanguage}</span>
-              </div>
-              <h1 className="font-display text-2xl lg:text-3xl font-semibold text-slate-900">
-                {currentPersona.fullTitle}
-              </h1>
-              <p className="text-sm text-slate-600 mt-1 max-w-2xl">
-                {currentPersona.subtitle}
-              </p>
-            </div>
-
-            {/* WhatsApp / Discord / Slack Platform Toggle */}
-            <div className="flex flex-col sm:items-end gap-1.5 shrink-0">
-              <span className="text-[11px] font-semibold text-slate-500">
-                Select Communication Channel:
-              </span>
-              <div className="flex items-center gap-1 p-1 bg-slate-200/80 rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPlatform("Email");
-                    handleGenerate({ platformOverride: "Email" });
-                  }}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                    platform === "Email"
-                      ? "bg-white text-slate-900 shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <Mail className="w-3.5 h-3.5 text-teal-700" />
-                  <span>Email</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPlatform("WhatsApp / Text Message");
-                    handleGenerate({
-                      platformOverride: "WhatsApp / Text Message",
-                    });
-                  }}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                    platform === "WhatsApp / Text Message"
-                      ? "bg-white text-slate-900 shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>WhatsApp / Text Message</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPlatform("Slack / Discord");
-                    handleGenerate({ platformOverride: "Slack / Discord" });
-                  }}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                    platform === "Slack / Discord"
-                      ? "bg-white text-slate-900 shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <Hash className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>Slack / Discord</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. "ANXIETY-BUSTER" CALMING PALETTE, SOUND & CELEBRATION BAR */}
-          <div className="bg-white/90 backdrop-blur-xs border border-teal-200 rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold text-teal-950 flex items-center gap-1.5">
-                <span>🌿 Anxiety-Buster Calming Backdrop:</span>
-              </span>
-              {[
-                {
-                  id: "soft_blue" as const,
-                  label: "☁️ Soft Sky Blue",
-                  swatch: "bg-sky-100 border-sky-300 text-sky-950",
-                },
-                {
-                  id: "mint_green" as const,
-                  label: "🌱 Mint Green",
-                  swatch: "bg-emerald-100 border-emerald-300 text-emerald-950",
-                },
-                {
-                  id: "warm_purple" as const,
-                  label: "💜 Warm Lavender",
-                  swatch: "bg-purple-100 border-purple-300 text-purple-950",
-                },
-                {
-                  id: "cartoon_sunny" as const,
-                  label: "☀️ Sunny Kids Gold",
-                  swatch: "bg-amber-100 border-amber-400 text-amber-950",
-                },
-              ].map((themeOpt) => (
-                <button
-                  key={themeOpt.id}
-                  type="button"
-                  onClick={() => setCalmingTheme(themeOpt.id)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                    calmingTheme === themeOpt.id
-                      ? `${themeOpt.swatch} ring-2 ring-teal-700 font-bold`
-                      : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  {themeOpt.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setAnxietySoundEnabled((prev) => !prev)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
-                  anxietySoundEnabled
-                    ? "bg-teal-50 border-teal-300 text-teal-900"
-                    : "bg-slate-100 border-slate-300 text-slate-600"
-                }`}
-                title="Toggle soothing chime when your draft is polished"
-              >
-                {anxietySoundEnabled ? "🔔 Calming Chime: ON" : "🔕 Chime: OFF"}
-              </button>
-
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPreferredCelebration("balloons");
-                    triggerCelebration("balloons");
-                  }}
-                  className={`px-2 py-0.5 rounded text-xs font-semibold cursor-pointer ${
-                    preferredCelebration === "balloons"
-                      ? "bg-white text-slate-900 shadow-2xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                  title="Launch celebratory balloons (st.balloons)"
-                >
-                  🎈 Balloons
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPreferredCelebration("snow");
-                    triggerCelebration("snow");
-                  }}
-                  className={`px-2 py-0.5 rounded text-xs font-semibold cursor-pointer ${
-                    preferredCelebration === "snow"
-                      ? "bg-white text-slate-900 shadow-2xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                  title="Launch calming snow (st.snow)"
-                >
-                  ❄️ Calm Snow
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPreferredCelebration("confetti");
-                    triggerCelebration("confetti");
-                  }}
-                  className={`px-2 py-0.5 rounded text-xs font-semibold cursor-pointer ${
-                    preferredCelebration === "confetti"
-                      ? "bg-white text-slate-900 shadow-2xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                  title="Launch confetti burst"
-                >
-                  🎉 Confetti
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* ALL-AGES QUICK START BANNER: Step 1 (Who Are You?) -> Step 2 (Write/Speak) -> Step 3 (Copy Ready Message) */}
-          <div className="bg-white border-2 border-teal-600/80 rounded-xl p-5 shadow-2xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-teal-800">
-                  🌟 Easy for Every Age (Kids, Students, Adults &amp; Seniors)
-                </span>
-                <h2 className="font-display text-lg font-bold text-slate-900 mt-0.5">
-                  Step 1: Who Are You Writing As Today? (Tap One Box Below)
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setRoboWordTrigger("__OPEN_APP_GUIDE__")}
-                className="self-start sm:self-center px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 border border-teal-300 text-teal-950 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>🤖 Ask Bibo: How to Use This App</span>
-              </button>
-            </div>
-
-            {/* Big, Visual All-Ages Mode Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2.5">
-              <button
-                type="button"
-                onClick={() => handleSelectPersona("college_student")}
-                className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${
-                  persona === "college_student"
-                    ? "bg-teal-50 border-teal-700 text-teal-950 shadow-2xs"
-                    : "bg-slate-50/70 border-slate-200 text-slate-800 hover:bg-white hover:border-slate-300"
-                }`}
-              >
-                <div className="text-lg mb-1">🎓</div>
-                <p className="font-bold text-xs text-slate-900">
-                  College Student
-                </p>
-                <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
-                  Email professors, TAs &amp; advisors
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPersona("school_kids")}
-                className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer relative overflow-hidden ${
-                  persona === "school_kids"
-                    ? "bg-amber-300 border-slate-900 text-slate-950 shadow-[4px_4px_0px_0px_#0f172a] -translate-y-0.5"
-                    : "bg-amber-50/90 border-amber-400 text-slate-900 hover:bg-amber-100 hover:border-slate-900"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xl">🎨🎒</span>
-                  <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded-full bg-pink-500 text-white border border-slate-900">
-                    Cartoon Fun!
-                  </span>
-                </div>
-                <p className="font-extrabold text-xs text-slate-950">
-                  Kids Cartoon Zone!
-                </p>
-                <p className="text-[11px] text-slate-800 mt-0.5 leading-snug font-medium">
-                  Captain Pencil ✏️, games &amp; stars for kids!
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPersona("seniors")}
-                className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${
-                  persona === "seniors"
-                    ? "bg-teal-50 border-teal-700 text-teal-950 shadow-2xs"
-                    : "bg-slate-50/70 border-slate-200 text-slate-800 hover:bg-white hover:border-slate-300"
-                }`}
-              >
-                <div className="text-lg mb-1">👵</div>
-                <p className="font-bold text-xs text-slate-900">
-                  Seniors &amp; Elders
-                </p>
-                <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
-                  Doctors, medical bills &amp; family help
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPersona("women_advocacy")}
-                className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${
-                  persona === "women_advocacy"
-                    ? "bg-teal-50 border-teal-700 text-teal-950 shadow-2xs"
-                    : "bg-slate-50/70 border-slate-200 text-slate-800 hover:bg-white hover:border-slate-300"
-                }`}
-              >
-                <div className="text-lg mb-1">💪</div>
-                <p className="font-bold text-xs text-slate-900">
-                  Self-Advocacy
-                </p>
-                <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
-                  Say &lsquo;no&rsquo; &amp; set warm boundaries
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPersona("friendly_chat")}
-                className={`col-span-2 sm:col-span-1 p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${
-                  persona === "friendly_chat"
-                    ? "bg-teal-50 border-teal-700 text-teal-950 shadow-2xs"
-                    : "bg-slate-50/70 border-slate-200 text-slate-800 hover:bg-white hover:border-slate-300"
-                }`}
-              >
-                <div className="text-lg mb-1">💬</div>
-                <p className="font-bold text-xs text-slate-900">
-                  Friendly Chat
-                </p>
-                <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
-                  Bestie, partner, family &amp; general
-                </p>
-              </button>
-            </div>
-
-            {/* One-Tap Difficult Words Bar */}
-            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-semibold text-slate-800">
-                📖 Confused by a hard word? Tap any word to see its simple meaning:
-              </span>
-              {Object.keys(SIMPLE_WORD_GLOSSARY).map((word) => (
-                <button
-                  key={word}
-                  type="button"
-                  onClick={() => setRoboWordTrigger(word)}
-                  className="px-2.5 py-1 rounded-md bg-teal-50 hover:bg-teal-700 hover:text-white text-teal-950 border border-teal-300 font-medium transition-colors cursor-pointer capitalize"
-                >
-                  {word}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* CARTOONIC KIDS ADVENTURE WORLD (Active when persona === "school_kids") */}
-          {persona === "school_kids" && (
-            <section className="rounded-3xl bg-gradient-to-br from-amber-200/90 via-sky-200/90 to-pink-200/90 backdrop-blur-xs border-4 border-slate-900 shadow-[6px_6px_0px_0px_#0f172a] p-5 sm:p-6 space-y-5">
-              {/* Interactive Scrolling Cartoon Pictures Parade Reel */}
-              <KidsCartoonParadeStrip
-                onTapCartoonCard={(cheer) => {
-                  setKidStarsCount((c) => c + 1);
-                  setKidMascotBubble(cheer);
-                }}
-              />
-
-              {/* Top Cartoon Header with Custom SVG Mascots + Star Counter */}
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white/95 rounded-2xl border-3 border-slate-900 p-4 shadow-[4px_4px_0px_0px_#0f172a]">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  {/* Cute Cartoon Mascot Trio SVG (Captain Pencil + Professor Hoot + Sunny Star) */}
-                  <div className="flex items-center -space-x-2 shrink-0 self-start sm:self-center">
-                    {/* Captain Pencil SVG */}
-                    <div
-                      className="w-16 h-16 rounded-2xl bg-amber-300 border-3 border-slate-900 flex items-center justify-center shadow-[3px_3px_0px_0px_#0f172a] -rotate-3"
-                      title="Captain Pencil!"
+              <div className="grid grid-cols-1 gap-2">
+                {CRISIS_STARTER_CARDS.filter((c) => c.group === "college").map(
+                  (card) => (
+                    <button
+                      key={card.id}
+                      type="button"
+                      onClick={() => {
+                        setPersona(card.persona);
+                        setRelationship(card.relationship);
+                        setSituation(card.situation);
+                        setCourseOrRefCode(card.courseOrRef);
+                        setRoughDraft(card.draft);
+                        handleGenerate({
+                          draftOverride: card.draft,
+                          personaOverride: card.persona,
+                          relationshipOverride: card.relationship,
+                          situationOverride: card.situation,
+                          courseOverride: card.courseOrRef,
+                        });
+                      }}
+                      className="w-full text-left p-2.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-teal-100/60 border border-teal-300/80 dark:border-slate-700 transition-all flex items-center justify-between gap-2 cursor-pointer"
                     >
-                      <svg viewBox="0 0 64 64" className="w-13 h-13">
-                        {/* Superhero Cape */}
-                        <path
-                          d="M14 34 L6 54 L26 48 Z"
-                          fill="#EF4444"
-                          stroke="#0F172A"
-                          strokeWidth="2.5"
-                          strokeLinejoin="round"
-                        />
-                        {/* Pencil Body */}
-                        <rect
-                          x="22"
-                          y="18"
-                          width="20"
-                          height="30"
-                          rx="3"
-                          fill="#FACC15"
-                          stroke="#0F172A"
-                          strokeWidth="2.5"
-                        />
-                        {/* Pink Eraser Hat */}
-                        <rect
-                          x="22"
-                          y="10"
-                          width="20"
-                          height="9"
-                          rx="4"
-                          fill="#F472B6"
-                          stroke="#0F172A"
-                          strokeWidth="2.5"
-                        />
-                        {/* Pencil Tip */}
-                        <polygon
-                          points="22,48 42,48 32,60"
-                          fill="#FDE68A"
-                          stroke="#0F172A"
-                          strokeWidth="2.5"
-                          strokeLinejoin="round"
-                        />
-                        <polygon points="29,55 35,55 32,60" fill="#0F172A" />
-                        {/* Cute Cartoon Eyes & Big Smile */}
-                        <circle cx="28" cy="30" r="3" fill="#0F172A" />
-                        <circle cx="36" cy="30" r="3" fill="#0F172A" />
-                        <circle cx="27" cy="29" r="1" fill="#FFFFFF" />
-                        <circle cx="35" cy="29" r="1" fill="#FFFFFF" />
-                        <path
-                          d="M27 37 Q32 42 37 37"
-                          fill="none"
-                          stroke="#0F172A"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </div>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="text-xl shrink-0">{card.emoji}</span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                            {card.title}
+                          </p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                            {card.subtitle}
+                          </p>
+                        </div>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-teal-700 shrink-0" />
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
 
-                    {/* Professor Hoot the Cartoon Owl SVG */}
-                    <div
-                      className="w-16 h-16 rounded-2xl bg-sky-300 border-3 border-slate-900 flex items-center justify-center shadow-[3px_3px_0px_0px_#0f172a] rotate-3"
-                      title="Professor Hoot the Wise Owl!"
-                    >
-                      <svg viewBox="0 0 64 64" className="w-13 h-13">
-                        {/* Owl Body */}
-                        <ellipse
-                          cx="32"
-                          cy="36"
-                          rx="18"
-                          ry="19"
-                          fill="#8B5CF6"
-                          stroke="#0F172A"
-                          strokeWidth="2.5"
-                        />
-                        {/* Owl Belly */}
-                        <ellipse
-                          cx="32"
-                          cy="41"
-                          rx="11"
-                          ry="11"
-                          fill="#DDD6FE"
-                          stroke="#0F172A"
-                          strokeWidth="2"
-                        />
-                        {/* Big Cartoon Glasses & Eyes */}
-                        <circle
-                          cx="25"
-                          cy="29"
-                          r="6.5"
-                          fill="#FFFFFF"
-                          stroke="#0F172A"
-                          strokeWidth="2.5"
-                        />
-                        <circle
-                          cx="39"
-                          cy="29"
-                          r="6.5"
-                          fill="#FFFFFF"
-                          stroke="#0F172A"
-                          strokeWidth="2.5"
-                        />
-                        <circle cx="25" cy="29" r="3" fill="#0F172A" />
-                        <circle cx="39" cy="29" r="3" fill="#0F172A" />
-                        <circle cx="24" cy="28" r="1" fill="#FFFFFF" />
-                        <circle cx="38" cy="28" r="1" fill="#FFFFFF" />
-                        {/* Orange Beak */}
-                        <polygon
-                          points="29,33 35,33 32,39"
-                          fill="#F97316"
-                          stroke="#0F172A"
-                          strokeWidth="2"
-                        />
-                        {/* Cute Graduation Cap */}
-                        <polygon
-                          points="16,16 32,10 48,16 32,22"
-                          fill="#0F172A"
-                        />
-                        <line
-                          x1="44"
-                          y1="17"
-                          x2="47"
-                          y2="25"
-                          stroke="#FACC15"
-                          strokeWidth="2.5"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* Cartoon Mascot Speech Bubble */}
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full bg-pink-500 text-white text-xs font-extrabold border-2 border-slate-900">
-                        🎨 CARTOON KIDS CLUBHOUSE
-                      </span>
-                      <span className="text-xs font-extrabold text-slate-800">
-                        Captain Pencil ✏️ &amp; Professor Hoot 🦉 say:
-                      </span>
-                    </div>
-                    <p className="text-sm sm:text-base font-bold text-slate-950 bg-amber-100/90 px-3.5 py-2 rounded-xl border-2 border-slate-900">
-                      &ldquo;{kidMascotBubble}&rdquo;
-                    </p>
-                  </div>
-                </div>
-
-                {/* Gamified Kid Kindness Star Counter */}
-                <div className="flex items-center gap-3 self-start lg:self-center bg-amber-300 px-4 py-2.5 rounded-2xl border-3 border-slate-900 shadow-[3px_3px_0px_0px_#0f172a] shrink-0">
-                  <span className="text-2xl">⭐</span>
-                  <div>
-                    <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-900">
-                      Super Kid Stars
-                    </p>
-                    <p className="text-lg font-extrabold text-slate-950 leading-none">
-                      {kidStarsCount} Gold Stars! 🏆
-                    </p>
-                  </div>
+        {/* STEP-BY-STEP 2-COLUMN WORKSPACE */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* LEFT COLUMN: STEP 1 (CHOOSE WHO & WHY) + STEP 2 (WRITE OR SPEAK) */}
+          <div className="lg:col-span-5 space-y-6">
+            {/* STEP 1 CARD */}
+            <div
+              className={`rounded-2xl p-5 border shadow-xs ${
+                persona === "school_kids"
+                  ? "bg-white border-4 border-slate-900 shadow-[5px_5px_0px_0px_#0f172a]"
+                  : "bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800"
+              }`}
+            >
+              <div className="flex items-center gap-2.5 mb-4">
+                <span className="w-7 h-7 rounded-full bg-teal-700 text-white text-xs font-extrabold flex items-center justify-center">
+                  1
+                </span>
+                <div>
+                  <h2 className="font-bold text-base text-slate-900 dark:text-white">
+                    Step 1: Choose Who &amp; Why
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Pick who you are messaging, your situation, and how you want
+                    to sound.
+                  </p>
                 </div>
               </div>
 
-              {/* Cartoon Step 1A: How Are You Feeling? (6 Bouncy Cartoon Feeling Stickers) */}
-              <div className="bg-white/95 rounded-2xl border-3 border-slate-900 p-4 shadow-[4px_4px_0px_0px_#0f172a] space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="font-display text-sm sm:text-base font-extrabold text-slate-950 flex items-center gap-2">
-                    <span>🎭 1. How Do You Feel Inside? (Tap a Cartoon Sticker!)</span>
-                  </h3>
-                  <span className="text-xs font-bold text-pink-700 bg-pink-100 px-2.5 py-0.5 rounded-full border border-pink-300">
-                    +1 Gold Star ⭐ when you tap!
-                  </span>
+              <div className="space-y-3.5">
+                {/* Recipient Relationship */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Who are you messaging? (Recipient)
+                  </label>
+                  <select
+                    value={relationship}
+                    onChange={(e) => setRelationship(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm font-medium"
+                  >
+                    <optgroup label={`${currentPersonaConfig.shortLabel} Recipients`}>
+                      {currentPersonaConfig.relationships.map((rel) => (
+                        <option key={rel} value={rel}>
+                          {rel}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Informal / Personal (Bestie, Lover, Family)">
+                      {INFORMAL_RELATIONSHIPS.map((rel) => (
+                        <option key={`inf-${rel}`} value={rel}>
+                          {rel}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-                  {[
-                    {
-                      id: "uh_oh",
-                      emoji: "😰",
-                      title: "Uh-Oh! Nervous",
-                      sub: "Scared to get in trouble",
-                      mood: "Anxious / Stressed" as WriterMoodOption,
-                      bg: "bg-sky-100 hover:bg-sky-200",
-                      activeBg: "bg-sky-300",
-                      cheer:
-                        "Don't worry! Everyone gets nervous sometimes. We'll help your teacher see how hard you tried! 💙⭐",
-                    },
-                    {
-                      id: "oops_sorry",
-                      emoji: "🥺",
-                      title: "Oops! Sorry",
-                      sub: "I made a mistake",
-                      mood: "Apologetic" as WriterMoodOption,
-                      bg: "bg-amber-100 hover:bg-amber-200",
-                      activeBg: "bg-amber-300",
-                      cheer:
-                        "Mistakes help our brains grow! Saying an honest, brave 'I'm sorry' is a superpower! 🌟",
-                    },
-                    {
-                      id: "not_fair",
-                      emoji: "😤",
-                      title: "Grrr! Not Fair!",
-                      sub: "Feeling frustrated",
-                      mood: "Frustrated" as WriterMoodOption,
-                      bg: "bg-rose-100 hover:bg-rose-200",
-                      activeBg: "bg-rose-300",
-                      cheer:
-                        "Take a deep dragon breath! 🐉 We'll turn your frustration into calm, smart words that work!",
-                    },
-                    {
-                      id: "confused_owl",
-                      emoji: "🤔",
-                      title: "Huh? Confused",
-                      sub: "Need extra help",
-                      mood: "Calm / Neutral" as WriterMoodOption,
-                      bg: "bg-purple-100 hover:bg-purple-200",
-                      activeBg: "bg-purple-300",
-                      cheer:
-                        "Professor Hoot says: Asking questions when you're stuck makes you the smartest kid in class! 🦉✨",
-                    },
-                    {
-                      id: "super_brave",
-                      emoji: "🦁",
-                      title: "Brave Lion!",
-                      sub: "Ready to speak up",
-                      mood: "Confident" as WriterMoodOption,
-                      bg: "bg-emerald-100 hover:bg-emerald-200",
-                      activeBg: "bg-emerald-300",
-                      cheer:
-                        "ROAR! 🦁 You're speaking up with kindness and courage! Let's write an awesome message!",
-                    },
-                    {
-                      id: "yay_happy",
-                      emoji: "🤩",
-                      title: "Yay! Excited!",
-                      sub: "Sharing happy news",
-                      mood: "Excited" as WriterMoodOption,
-                      bg: "bg-pink-100 hover:bg-pink-200",
-                      activeBg: "bg-pink-300",
-                      cheer:
-                        "Woohoo! 🎉 High-five from Captain Pencil! Let's share your awesome news!",
-                    },
-                  ].map((sticker) => {
-                    const isSelected = kidSelectedSticker === sticker.id;
-                    return (
+                {/* Situation Selector */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    What is the situation?
+                  </label>
+                  <select
+                    value={situation}
+                    onChange={(e) => setSituation(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm font-medium"
+                  >
+                    <optgroup label={`${currentPersonaConfig.shortLabel} Situations`}>
+                      {currentPersonaConfig.situations.map((sit) => (
+                        <option key={sit} value={sit}>
+                          {sit}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Personal & Everyday Situations">
+                      {INFORMAL_SITUATIONS.map((sit) => (
+                        <option key={`infsit-${sit}`} value={sit}>
+                          {sit}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
+
+                {/* Channel Toggle (Email vs WhatsApp vs Slack) */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Where will you send this? (Platform)
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(
+                      [
+                        { id: "Email", label: "📧 Email", icon: Mail },
+                        {
+                          id: "WhatsApp / Text Message",
+                          label: "💬 WhatsApp / Text",
+                          icon: MessageSquare,
+                        },
+                        {
+                          id: "Slack / Discord",
+                          label: "💬 Slack / Discord",
+                          icon: Hash,
+                        },
+                      ] as const
+                    ).map((ch) => (
                       <button
-                        key={sticker.id}
+                        key={ch.id}
                         type="button"
-                        onClick={() => {
-                          setKidSelectedSticker(sticker.id);
-                          setWriterMood(sticker.mood);
-                          setKidStarsCount((c) => c + 1);
-                          setKidMascotBubble(sticker.cheer);
-                          handleGenerate({ moodOverride: sticker.mood });
-                        }}
-                        className={`p-3 rounded-2xl border-3 border-slate-900 text-left transition-all cursor-pointer ${
-                          isSelected
-                            ? `${sticker.activeBg} shadow-[4px_4px_0px_0px_#0f172a] -translate-y-1`
-                            : `${sticker.bg} shadow-[2px_2px_0px_0px_#0f172a] hover:-translate-y-0.5`
+                        onClick={() => setPlatform(ch.id)}
+                        className={`px-2.5 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                          platform === ch.id
+                            ? "bg-teal-700 text-white border-teal-700"
+                            : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700"
                         }`}
                       >
-                        <div className="text-2xl mb-1">{sticker.emoji}</div>
-                        <p className="font-extrabold text-xs text-slate-950">
-                          {sticker.title}
-                        </p>
-                        <p className="text-[11px] font-medium text-slate-800 leading-tight mt-0.5">
-                          {sticker.sub}
-                        </p>
+                        {ch.label}
                       </button>
-                    );
-                  })}
+                    ))}
+                  </div>
+                </div>
+
+                {/* Writer Mood & Target Tone */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      How do you feel right now?
+                    </label>
+                    <select
+                      value={writerMood}
+                      onChange={(e) => {
+                        setWriterMood(e.target.value as WriterMoodOption);
+                        setCoolOffDismissed(false);
+                      }}
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-xs font-semibold"
+                    >
+                      {WRITER_MOOD_OPTIONS.map((m) => (
+                        <option key={m.value} value={m.value}>
+                          {m.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      How do you want to sound?
+                    </label>
+                    <select
+                      value={toneStyle}
+                      onChange={(e) =>
+                        setToneStyle(e.target.value as ToneOption)
+                      }
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-xs font-semibold"
+                    >
+                      {(
+                        [
+                          "Polite & Direct",
+                          "Ultra Formal",
+                          "Apologetic",
+                          "Persuasive",
+                        ] as ToneOption[]
+                      ).map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Language & Romanized Script Selector (Hinglish / Tanglish / Global) */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+                    <span className="flex items-center gap-1">
+                      <Globe className="w-3.5 h-3.5 text-teal-600" />
+                      Output Language / Chat Slang Script
+                    </span>
+                    <span className="text-[11px] font-semibold text-teal-700 dark:text-teal-300">
+                      Detected: {detectedLangInfo.detectedLabel}
+                    </span>
+                  </label>
+                  <select
+                    value={targetLanguage}
+                    onChange={(e) => setTargetLanguage(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-xs font-semibold"
+                  >
+                    {LANGUAGE_AND_SCRIPT_GROUPS.map((grp) => (
+                      <optgroup key={grp.groupLabel} label={grp.groupLabel}>
+                        {grp.options.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Optional Course / Sender / Recipient Details */}
+                {!simpleViewMode && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5">
+                        {currentPersonaConfig.defaultCourseLabel}
+                      </label>
+                      <input
+                        type="text"
+                        value={courseOrRefCode}
+                        onChange={(e) => setCourseOrRefCode(e.target.value)}
+                        placeholder={
+                          currentPersonaConfig.defaultCoursePlaceholder
+                        }
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-2.5 py-1.5 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5">
+                        Your Name
+                      </label>
+                      <input
+                        type="text"
+                        value={studentName}
+                        onChange={(e) => setStudentName(e.target.value)}
+                        placeholder={currentPersonaConfig.senderPlaceholder}
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-2.5 py-1.5 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5">
+                        Recipient Name
+                      </label>
+                      <input
+                        type="text"
+                        value={professorName}
+                        onChange={(e) => setProfessorName(e.target.value)}
+                        placeholder={currentPersonaConfig.recipientPlaceholder}
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-2.5 py-1.5 text-xs"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Boosters: Apology-Stripper, Plain-Language, Subtle Emoji Booster */}
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={apologyStripper}
+                      onChange={(e) => setApologyStripper(e.target.checked)}
+                      className="rounded border-slate-300 text-teal-600"
+                    />
+                    <span>🛡️ Apology-Stripper</span>
+                  </label>
+
+                  <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={simplifyLanguage}
+                      onChange={(e) => setSimplifyLanguage(e.target.checked)}
+                      className="rounded border-slate-300 text-teal-600"
+                    />
+                    <span>📖 Plain Language (Kids/Seniors)</span>
+                  </label>
+
+                  <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={subtleEmojiBooster}
+                      onChange={(e) => setSubtleEmojiBooster(e.target.checked)}
+                      className="rounded border-slate-300 text-teal-600"
+                    />
+                    <span>🥺 Subtle Warm Emojis</span>
+                  </label>
                 </div>
               </div>
+            </div>
 
-              {/* Cartoon Step 1B: Pick a School Story Adventure! (Big Comic Cards) */}
-              <div className="bg-white/95 rounded-2xl border-3 border-slate-900 p-4 shadow-[4px_4px_0px_0px_#0f172a] space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="font-display text-sm sm:text-base font-extrabold text-slate-950">
-                    🎮 2. Pick a Fun School Adventure Card (1-Tap Try It!):
+            {/* "VIBE CHECK" & INTENT SELECTOR + HINGLISH/TANGLISH SLANG ADAPTER */}
+            {!simpleViewMode && (
+              <div className="rounded-2xl bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <MessageCircleHeart className="w-4 h-4 text-pink-600" />
+                    <span>
+                      &ldquo;Vibe Check&rdquo; &amp; Intent Selector (Lovers, Dating &amp;
+                      Besties)
+                    </span>
                   </h3>
-                  <span className="text-xs font-bold text-slate-700">
-                    Click any card to load a kid story!
+                  <span className="text-[11px] font-semibold text-pink-700 bg-pink-50 px-2 py-0.5 rounded-full border border-pink-200">
+                    1-Click Tone Vibe
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
-                  {currentPersona.presets.map((preset, idx) => {
-                    const cardColors = [
-                      "bg-amber-200 hover:bg-amber-300",
-                      "bg-sky-200 hover:bg-sky-300",
-                      "bg-emerald-200 hover:bg-emerald-300",
-                      "bg-pink-200 hover:bg-pink-300",
-                      "bg-purple-200 hover:bg-purple-300",
-                    ];
-                    return (
+                {/* Lovers / Dating Vibes */}
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-rose-700 dark:text-rose-300 mb-1.5">
+                    💖 For Lovers / Dating
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {VIBE_CHECK_OPTIONS.filter(
+                      (v) => v.category === "lovers"
+                    ).map((vibe) => (
+                      <button
+                        key={vibe.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedVibeId(vibe.id);
+                          setPersona("friendly_chat");
+                          setPlatform("WhatsApp / Text Message");
+                          setRelationship(vibe.relationship);
+                          setSituation(vibe.situation);
+                          setWriterMood(vibe.mood);
+                          setRoughDraft(vibe.sampleDraft);
+                          handleGenerate({
+                            draftOverride: vibe.sampleDraft,
+                            personaOverride: "friendly_chat",
+                            relationshipOverride: vibe.relationship,
+                            situationOverride: vibe.situation,
+                            moodOverride: vibe.mood,
+                          });
+                        }}
+                        className={`p-2 rounded-xl border text-left text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+                          selectedVibeId === vibe.id
+                            ? "bg-rose-50 border-rose-400 text-rose-950 shadow-2xs"
+                            : "bg-slate-50 dark:bg-slate-800 hover:bg-rose-50/50 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
+                        }`}
+                      >
+                        <span className="text-base">{vibe.icon}</span>
+                        <span className="truncate">{vibe.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Besties & Friends Vibes */}
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-1.5">
+                    🤝 For Besties &amp; Friends
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {VIBE_CHECK_OPTIONS.filter(
+                      (v) => v.category === "friends"
+                    ).map((vibe) => (
+                      <button
+                        key={vibe.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedVibeId(vibe.id);
+                          setPersona("friendly_chat");
+                          setPlatform("WhatsApp / Text Message");
+                          setRelationship(vibe.relationship);
+                          setSituation(vibe.situation);
+                          setWriterMood(vibe.mood);
+                          setRoughDraft(vibe.sampleDraft);
+                          handleGenerate({
+                            draftOverride: vibe.sampleDraft,
+                            personaOverride: "friendly_chat",
+                            relationshipOverride: vibe.relationship,
+                            situationOverride: vibe.situation,
+                            moodOverride: vibe.mood,
+                          });
+                        }}
+                        className={`p-2 rounded-xl border text-left text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+                          selectedVibeId === vibe.id
+                            ? "bg-amber-50 border-amber-400 text-amber-950 shadow-2xs"
+                            : "bg-slate-50 dark:bg-slate-800 hover:bg-amber-50/50 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
+                        }`}
+                      >
+                        <span className="text-base">{vibe.icon}</span>
+                        <span className="truncate">{vibe.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Hinglish / Tanglish / Spanglish Chat Slang Adapter Presets */}
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-teal-800 dark:text-teal-300 mb-1.5">
+                    🌏 Hinglish / Tanglish / Spanglish Chat Slang Presets
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {SLANG_SCRIPT_PRESETS.map((preset) => (
                       <button
                         key={preset.id}
                         type="button"
                         onClick={() => {
-                          setKidStarsCount((c) => c + 1);
-                          setKidMascotBubble(
-                            `Awesome pick! Loaded "${preset.buttonLabel}" — look how polite your message looks below! ⭐`
-                          );
-                          handleLoadPreset(preset);
+                          setTargetLanguage(preset.languageOption);
+                          setSubtleEmojiBooster(true);
+                          setRoughDraft(preset.coldBefore);
+                          setCustomEditedBody(preset.warmAfter);
+                          triggerShortcutToast(`✨ Applied ${preset.label}!`);
                         }}
-                        className={`p-3 rounded-2xl border-3 border-slate-900 ${
-                          cardColors[idx % cardColors.length]
-                        } shadow-[3px_3px_0px_0px_#0f172a] hover:-translate-y-0.5 transition-all text-left flex flex-col justify-between gap-2 cursor-pointer`}
+                        className="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-slate-800 hover:bg-teal-100 text-teal-900 dark:text-teal-200 border border-teal-200 dark:border-slate-700 text-[11px] font-semibold cursor-pointer"
                       >
-                        <span className="font-extrabold text-xs text-slate-950 leading-snug">
-                          {preset.buttonLabel}
-                        </span>
-                        <span className="text-[11px] font-bold text-slate-900 bg-white/80 px-2 py-0.5 rounded-lg border border-slate-900 self-start">
-                          Tap to Play →
-                        </span>
+                        {preset.label}
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Cartoon Step 1C: Magic Polite Word Power-Ups */}
-              <div className="bg-white/95 rounded-2xl border-3 border-slate-900 p-4 shadow-[4px_4px_0px_0px_#0f172a] space-y-2.5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="font-display text-sm sm:text-base font-extrabold text-slate-950">
-                    🪄 3. Sprinkle &ldquo;Magic Polite Words&rdquo; Into Your Box!
-                  </h3>
-                  <span className="text-xs font-bold text-emerald-900 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-400">
-                    Tap any magic wand button to add it to your draft!
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {[
-                    {
-                      label: "✨ 'Could you please help me understand...'",
-                      phrase:
-                        "Could you please help me understand how to do this part?",
-                      cheer:
-                        "Magic Sparkle! ✨ Teachers LOVE when you ask 'Could you please help me understand'!",
-                    },
-                    {
-                      label: "🌟 'Thank you for being so patient with me!'",
-                      phrase: "Thank you so much for being patient with me!",
-                      cheer:
-                        "Super Star Power! 🌟 Saying 'Thank you for being patient' makes everyone smile!",
-                    },
-                    {
-                      label: "🦸 'I tried my very best on this!'",
-                      phrase:
-                        "I tried my very best on this assignment, even though I got stuck.",
-                      cheer:
-                        "Hero Shield! 🦸 Showing that you tried your best first is super responsible!",
-                    },
-                    {
-                      label: "🤝 'Can we work together to fix this?'",
-                      phrase: "Can we please work together so we both do great?",
-                      cheer:
-                        "Teamwork Power-Up! 🤝 Great friends and classmates solve problems together!",
-                    },
-                    {
-                      label: "💡 'Could you show me one example?'",
-                      phrase:
-                        "Could you please show me one example tomorrow before class?",
-                      cheer:
-                        "Lightbulb Moment! 💡 Asking for one example makes learning super easy!",
-                    },
-                  ].map((pw, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() =>
-                        handleAddKidMagicPhrase(pw.phrase, pw.cheer)
-                      }
-                      className="px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-300 border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0f172a] text-xs font-extrabold text-slate-950 transition-all cursor-pointer"
-                    >
-                      {pw.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* 3. SCENARIO CARDS & ONE-CLICK "CRISIS STARTERS" (Kids & Teens + College Students) */}
-          <section className="bg-white/95 backdrop-blur-xs rounded-xl border-2 border-teal-600/60 p-5 space-y-4 shadow-2xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-teal-800">
-                  ⚡ Freeze-Buster Scenario Cards
-                </span>
-                <h2 className="font-display text-base sm:text-lg font-bold text-slate-900">
-                  One-Click &ldquo;Crisis Starters&rdquo; (Don&apos;t Know How to Start? Tap One!)
-                </h2>
-              </div>
-              <span className="text-xs text-slate-500">
-                Loads scenario + polishes immediately
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* For Kids & Teens */}
-              <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-300 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-amber-950 flex items-center gap-1.5">
-                    <span>🎒 For Kids &amp; Teens (School Situations)</span>
-                  </span>
-                  <span className="text-[11px] font-semibold text-amber-900 bg-amber-200/70 px-2 py-0.5 rounded-full">
-                    Kid-Friendly
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 gap-2">
-                  {[
-                    {
-                      icon: "🎒",
-                      title: "Asking for help on a hard assignment",
-                      relationship: "School Teacher (Kind & Helpful)",
-                      situation: "Didn't Understand Homework / Need Extra Help",
-                      courseOrRef: "7th Grade Math - Worksheet #4",
-                      draft:
-                        "i tried doing worksheet 4 tonight with my mom and we both got stuck on the fraction word problems. i don't want to get in trouble tomorrow for not finishing it.",
-                    },
-                    {
-                      icon: "🤝",
-                      title: "Resolving a group project issue politely",
-                      relationship: "Group Project Classmate / Friend",
-                      situation: "Speaking Up About an Unfair Group Project",
-                      courseOrRef: "Science Fair Volcano Poster",
-                      draft:
-                        "hey you haven't done any of the slides yet and it's due friday. i don't want to do the whole thing by myself again.",
-                    },
-                    {
-                      icon: "⚽",
-                      title: "Informing a coach about a missed practice",
-                      relationship: "Sports Coach or Club Advisor",
-                      situation: "Forgot Homework or Made a Mistake in Class",
-                      courseOrRef: "After-School Soccer Practice",
-                      draft:
-                        "coach i have a dentist appointment after school tomorrow and i can't come to soccer practice. please don't bench me for saturday's game, i will practice drills at home!",
-                    },
-                  ].map((starter, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => {
-                        setPersona("school_kids");
-                        setRelationship(starter.relationship);
-                        setSituation(starter.situation);
-                        setCourseOrRefCode(starter.courseOrRef);
-                        setRoughDraft(starter.draft);
-                        setSimplifyLanguage(true);
-                        triggerCelebration("balloons");
-                        handleGenerate({
-                          draftOverride: starter.draft,
-                          personaOverride: "school_kids",
-                          relOverride: starter.relationship,
-                          sitOverride: starter.situation,
-                          simplifyOverride: true,
-                          refOverride: starter.courseOrRef,
-                        });
-                      }}
-                      className="w-full p-2.5 rounded-lg bg-white hover:bg-amber-100/80 border border-amber-300 text-left flex items-center justify-between gap-2 transition-colors cursor-pointer group"
-                    >
-                      <span className="text-xs font-bold text-slate-900">
-                        {starter.icon} &ldquo;{starter.title}&rdquo;
-                      </span>
-                      <ArrowRight className="w-3.5 h-3.5 text-amber-700 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* For College Students */}
-              <div className="p-3.5 rounded-xl bg-sky-50/80 border border-sky-200 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-sky-950 flex items-center gap-1.5">
-                    <span>🎓 For College Students (Academic Crises)</span>
-                  </span>
-                  <span className="text-[11px] font-semibold text-sky-900 bg-sky-200/70 px-2 py-0.5 rounded-full">
-                    Faculty-Ready
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 gap-2">
-                  {[
-                    {
-                      icon: "🩺",
-                      title: "Emergency absence request (with clinic note)",
-                      relationship: "Strict / Formal Professor",
-                      situation: "Sick & Missed Exam",
-                      courseOrRef: "COMP 101 - Course ID #1042",
-                      draft:
-                        "hey prof, i woke up with a 102 fever and severe stomach flu this morning and completely missed the 9 AM midterm exam. i have an official clinic note—can i please take a make-up exam this week?",
-                    },
-                    {
-                      icon: "📑",
-                      title: "Requesting a grade clarification on a paper",
-                      relationship: "Friendly / Approachable Professor",
-                      situation: "Grade Review / Clarification",
-                      courseOrRef: "ECON 204 - Sec 02",
-                      draft:
-                        "Hi professor, I worked really hard on Essay 2 and got a 68%. I would love to understand the rubric feedback on my analysis section during your office hours this week.",
-                    },
-                    {
-                      icon: "💼",
-                      title:
-                        "Asking for a recommendation letter / research spot",
-                      relationship: "Department Head / Dean",
-                      situation: "Request Recommendation Letter",
-                      courseOrRef: "BIO 110 - Honors Seminar",
-                      draft:
-                        "Hey Professor, I'm applying for a summer undergraduate research fellowship due in three weeks and since I earned an A in your seminar last term, could you write a recommendation letter for me?",
-                    },
-                  ].map((starter, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => {
-                        setPersona("college_student");
-                        setRelationship(starter.relationship);
-                        setSituation(starter.situation);
-                        setCourseOrRefCode(starter.courseOrRef);
-                        setRoughDraft(starter.draft);
-                        triggerCelebration("confetti");
-                        handleGenerate({
-                          draftOverride: starter.draft,
-                          personaOverride: "college_student",
-                          relOverride: starter.relationship,
-                          sitOverride: starter.situation,
-                          refOverride: starter.courseOrRef,
-                        });
-                      }}
-                      className="w-full p-2.5 rounded-lg bg-white hover:bg-sky-100/80 border border-sky-300 text-left flex items-center justify-between gap-2 transition-colors cursor-pointer group"
-                    >
-                      <span className="text-xs font-bold text-slate-900">
-                        {starter.icon} &ldquo;{starter.title}&rdquo;
-                      </span>
-                      <ArrowRight className="w-3.5 h-3.5 text-sky-700 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* 6. Interactive "Do's & Don'ts" Accordion */}
-          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setEtiquetteTipsOpen((prev) => !prev)}
-              className="w-full px-5 py-3.5 text-left flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <Pin className="w-4 h-4 text-teal-700 shrink-0" />
-                <span>
-                  📌 General Email Etiquette Tips (Do&apos;s &amp; Don&apos;ts for Emailing Faculty)
-                </span>
-              </div>
-              {etiquetteTipsOpen ? (
-                <ChevronUp className="w-4 h-4 text-slate-500" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-slate-500" />
-              )}
-            </button>
-
-            {etiquetteTipsOpen && (
-              <div className="px-5 pb-5 pt-2 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                <div className="p-4 rounded-lg bg-emerald-50/60 border border-emerald-200 space-y-2">
-                  <p className="font-semibold text-emerald-950 text-sm">
-                    ✅ Faculty Email DO&apos;s
-                  </p>
-                  <ul className="space-y-1.5 text-emerald-900 list-disc pl-4">
-                    <li>
-                      <strong>Always use your university `.edu` email address</strong> so faculty spam filters don&apos;t block your message.
-                    </li>
-                    <li>
-                      <strong>Include your exact Course Code &amp; Section Number</strong> (e.g., <code className="font-mono">[COMP 101, Sec 02]</code>) in the subject line.
-                    </li>
-                    <li>
-                      <strong>Check the course syllabus first</strong> before asking about grading scales or office hours.
-                    </li>
-                    <li>
-                      <strong>Propose a specific, low-friction plan</strong> (e.g., &ldquo;Could I submit by Friday at 5:00 PM?&rdquo;).
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="p-4 rounded-lg bg-red-50/60 border border-red-200 space-y-2">
-                  <p className="font-semibold text-red-950 text-sm">
-                    ❌ Faculty Email DON&apos;Ts
-                  </p>
-                  <ul className="space-y-1.5 text-red-900 list-disc pl-4">
-                    <li>
-                      <strong>Don&apos;t open with &ldquo;Hey prof&rdquo; or &ldquo;Yo&rdquo;</strong>—always start with &ldquo;Dear Professor [Last Name],&rdquo;.
-                    </li>
-                    <li>
-                      <strong>Don&apos;t write a long emotional rant</strong>—keep your explanation brief, dignified, and accountable.
-                    </li>
-                    <li>
-                      <strong>Don&apos;t demand grade changes over email</strong>—ask to review your exam rubric together during office hours.
-                    </li>
-                    <li>
-                      <strong>Don&apos;t over-apologize for existing</strong>—swap &ldquo;Sorry to bother you&rdquo; for &ldquo;Thank you for your guidance.&rdquo;
-                    </li>
-                  </ul>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
-          </div>
 
-          {/* 1 & 3. "VIBE CHECK" & INTENT SELECTOR + "HINGLISH / TANGLISH" CHAT SLANG & EMOJI ADAPTER */}
-          <section className="bg-white/95 backdrop-blur-xs rounded-2xl border-2 border-pink-400/80 p-5 space-y-5 shadow-2xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-pink-100 pb-3">
-              <div>
-                <span className="text-xs font-extrabold uppercase tracking-wider text-pink-700">
-                  💖 &ldquo;Vibe Check&rdquo; &amp; Intent Selector (For Lovers, Dating, Besties &amp; Friends)
-                </span>
-                <h2 className="font-display text-base sm:text-lg font-bold text-slate-900">
-                  Pick the Exact Vibe &amp; Emotional Outcome You Want to Achieve
-                </h2>
-              </div>
-              <label className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-pink-50 border border-pink-300 text-xs font-bold text-pink-950 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={subtleEmojiEnhancer}
-                  onChange={(e) => setSubtleEmojiEnhancer(e.target.checked)}
-                  className="h-3.5 w-3.5 rounded border-pink-400 text-pink-600"
-                />
-                <span>🥺 Subtle Warm Emoji Placement: {subtleEmojiEnhancer ? "ON" : "OFF"}</span>
-              </label>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* For Lovers / Dating */}
-              <div className="p-3.5 rounded-xl bg-rose-50/70 border border-rose-200 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-rose-950">
-                    💑 For Lovers &amp; Dating
+            {/* STEP 2 CARD: WRITE OR SPEAK YOUR DRAFT */}
+            <div
+              className={`rounded-2xl p-5 border shadow-xs ${
+                persona === "school_kids"
+                  ? "bg-white border-4 border-slate-900 shadow-[5px_5px_0px_0px_#0f172a]"
+                  : "bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800"
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-7 h-7 rounded-full bg-teal-700 text-white text-xs font-extrabold flex items-center justify-center">
+                    2
                   </span>
-                  <span className="text-[11px] font-semibold text-rose-800 bg-rose-100 px-2 py-0.5 rounded-full">
-                    Romantic &amp; Warm
-                  </span>
+                  <div>
+                    <h2 className="font-bold text-base text-slate-900 dark:text-white">
+                      Step 2: Write or Speak Your Rough Draft
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Don&apos;t worry about sounding polite yet—just type or
+                      record what happened!
+                    </p>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {VIBE_CHECK_OPTIONS.filter((v) => v.category === "lovers").map(
-                    (vibe) => (
-                      <button
-                        key={vibe.id}
-                        type="button"
-                        onClick={() => handleSelectVibeCheck(vibe)}
-                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                          selectedVibeId === vibe.id
-                            ? "bg-rose-600 border-rose-700 text-white shadow-2xs"
-                            : "bg-white border-rose-200 text-slate-900 hover:bg-rose-100/60"
-                        }`}
-                      >
-                        <div className="text-xs font-extrabold flex items-center gap-1.5">
-                          <span>{vibe.icon}</span>
-                          <span>{vibe.label}</span>
-                        </div>
-                      </button>
-                    )
+
+                {/* Save & Load Draft Buttons */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={saveCurrentDraftToStorage}
+                    className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                    title="Save current draft (Ctrl+S)"
+                  >
+                    <Save className="w-3.5 h-3.5 text-teal-700" />
+                    <span>Save</span>
+                    <kbd className="hidden sm:inline-block text-[10px] font-mono bg-white dark:bg-slate-900 px-1 rounded border border-slate-300">
+                      Ctrl+S
+                    </kbd>
+                  </button>
+                  {hasStoredDraft && (
+                    <button
+                      type="button"
+                      onClick={loadSavedDraftFromStorage}
+                      className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                      title="Restore last saved draft"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-teal-700" />
+                      <span>Load</span>
+                    </button>
                   )}
                 </div>
               </div>
 
-              {/* For Besties & Friends */}
-              <div className="p-3.5 rounded-xl bg-purple-50/70 border border-purple-200 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-purple-950">
-                    🫶 For Besties &amp; Close Friends
-                  </span>
-                  <span className="text-[11px] font-semibold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full">
-                    Zero Stiff Formality
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {VIBE_CHECK_OPTIONS.filter(
-                    (v) => v.category === "friends"
-                  ).map((vibe) => (
-                    <button
-                      key={vibe.id}
-                      type="button"
-                      onClick={() => handleSelectVibeCheck(vibe)}
-                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                        selectedVibeId === vibe.id
-                          ? "bg-purple-700 border-purple-800 text-white shadow-2xs"
-                          : "bg-white border-purple-200 text-slate-900 hover:bg-purple-100/60"
-                      }`}
-                    >
-                      <div className="text-xs font-extrabold flex items-center gap-1.5">
-                        <span>{vibe.icon}</span>
-                        <span>{vibe.label}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* 3. "Hinglish / Tanglish" Chat Slang & Emoji Adapter Bar */}
-            <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 space-y-2.5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-extrabold text-amber-950">
-                  🗣️ &ldquo;Hinglish / Tanglish / Spanglish&rdquo; Chat Slang &amp; Emoji Adapter (No Textbook English!):
-                </span>
-                <span className="text-[11px] text-amber-900">
-                  Transforms cold sentences like <em>&ldquo;I am busy today&rdquo;</em> into warm, authentic texts
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {SLANG_SCRIPT_PRESETS.map((slang) => (
-                  <button
-                    key={slang.id}
-                    type="button"
-                    onClick={() => {
-                      setPersona("friendly_chat");
-                      setPlatform("WhatsApp / Text Message");
-                      setTargetLanguage(slang.languageOption);
-                      setRoughDraft(slang.coldBefore);
-                      setCustomEditedOutput(slang.warmAfter);
-                      playAnxietyBusterChime();
-                    }}
-                    className="px-3 py-1.5 rounded-lg bg-white hover:bg-amber-100 border border-amber-300 text-xs font-bold text-slate-900 transition-colors cursor-pointer"
-                  >
-                    {slang.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* 5. "COOL-OFF" DELAY PROMPT FOR HEATED MOMENTS */}
-          {showCoolOffPrompt && (
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-rose-50 to-sky-50 border-2 border-amber-400 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <p className="text-xs sm:text-sm font-extrabold text-slate-950 flex items-center gap-2">
-                  <span className="text-lg">🕊️</span>
-                  <span>
-                    &ldquo;Take a breath! Would you like to reframe this text using &lsquo;I feel&rsquo; statements instead of &lsquo;You always&rsquo; statements before sending?&rdquo;
-                  </span>
+              {savedDraftStatus && (
+                <p className="text-xs font-semibold text-emerald-700 mb-2">
+                  ✓ {savedDraftStatus}
                 </p>
-                <p className="text-xs text-slate-700">
-                  Heated texts sent in frustration can trigger defensiveness. Reframing around how <strong>you feel</strong> helps the other person actually listen.
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={startCoolOffBreathing}
-                  className="px-3 py-2 rounded-xl bg-white border border-sky-300 hover:bg-sky-50 text-sky-950 text-xs font-bold cursor-pointer"
-                >
-                  {coolOffBreathingSec > 0
-                    ? `🌬️ Breathe In... (${coolOffBreathingSec}s)`
-                    : "🌬️ 5-Sec Cool-Off Breath"}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleReframeWithIFeel}
-                  className="px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold cursor-pointer"
-                >
-                  ✨ Reframe with &ldquo;I Feel&rdquo; Statements
-                </button>
-              </div>
-            </div>
-          )}
+              )}
 
-          {/* STEP 2: Enter Your Rough Draft: Text or Voice Note ("Rant-to-Email") + Pre-Refinement Red Flag Checker */}
-          <section
-            className={`rounded-2xl p-5 space-y-4 transition-all ${
-              persona === "school_kids"
-                ? "bg-white border-4 border-slate-900 shadow-[6px_6px_0px_0px_#0f172a]"
-                : "bg-white rounded-xl border-2 border-slate-200"
-            }`}
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3.5">
-              <div>
-                <span
-                  className={`text-xs font-bold uppercase tracking-wider ${
-                    persona === "school_kids"
-                      ? "text-pink-600 bg-pink-100 px-2.5 py-0.5 rounded-full border border-slate-900"
-                      : "text-teal-800"
-                  }`}
-                >
-                  {persona === "school_kids"
-                    ? "🎨 Step 2: Tell Captain Pencil What Happened!"
-                    : "✍️ Step 2: Say What Happened in Your Own Words"}
-                </span>
-                <h2 className="font-display text-lg font-bold text-slate-900 mt-1">
-                  {persona === "school_kids"
-                    ? "Write Your Story in the Magic Box or Talk Into the Microphone! 🎤"
-                    : "Type Your Rough Thoughts or Record a Voice Note"}
-                </h2>
-                <p className="text-xs text-slate-600">
-                  {persona === "school_kids"
-                    ? "Don't worry about spelling or big words—Captain Pencil and Bibo Robo will help make it super polite!"
-                    : "Don't worry about grammar or politeness—type in any language or speak out loud!"}
-                </p>
-              </div>
-
-              {/* Tabbed Radio Toggle: ["✍️ Type Text", "🎤 Record Voice Note"] + Save / Load Draft */}
-              <div className="flex flex-wrap items-center gap-2 self-start">
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={handleSaveDraftToStorage}
-                    title="Save current rough draft and persona settings to browser storage"
-                    className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors whitespace-nowrap cursor-pointer"
-                  >
-                    <Save className="w-3.5 h-3.5 text-teal-700" />
-                    <span>Save</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleLoadLastDraftFromStorage}
-                    disabled={!hasSavedDraft}
-                    title={
-                      hasSavedDraft
-                        ? "Load your last saved draft and persona settings"
-                        : "Save a draft first to enable loading"
-                    }
-                    className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors whitespace-nowrap cursor-pointer"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5 text-teal-700" />
-                    <span>Load last draft</span>
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg">
-                  <button
-                    type="button"
-                    onClick={() => setInputMode("text")}
-                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                      inputMode === "text"
-                        ? "bg-white text-slate-900 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    ✍️ Type Text
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setInputMode("voice")}
-                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                      inputMode === "voice"
-                        ? "bg-white text-slate-900 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    🎤 Record Voice Note
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {draftStorageFeedback && (
-              <div className="px-3 py-2 rounded-lg bg-teal-50 border border-teal-200 text-xs font-medium text-teal-900 flex items-center justify-between">
-                <span>✓ {draftStorageFeedback}</span>
-              </div>
-            )}
-
-            {inputMode === "text" ? (
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label
-                    htmlFor="rough-draft-textarea"
-                    className="block text-xs font-semibold text-slate-700"
-                  >
-                    Your Raw Thoughts:
-                  </label>
-                  <div className="flex items-center gap-2 text-[11px]">
-                    <span className="text-slate-600">
-                      🌐 Auto-Detected Input Language:{" "}
-                      <strong className="text-teal-800">
-                        {liveDetectedLanguage.detectedLabel}
-                      </strong>
-                    </span>
-                    {targetLanguage !==
-                      liveDetectedLanguage.matchedLanguageOption &&
-                      targetLanguage !== "Auto-Detect (Match Input Language)" && (
+              {/* "COOL-OFF" DELAY PROMPT FOR HEATED MOMENTS */}
+              {isHeatedMoment && !coolOffDismissed && (
+                <div className="mb-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border-2 border-amber-300 dark:border-amber-700 p-3.5 shadow-2xs">
+                  <div className="flex items-start gap-2.5">
+                    <span className="text-xl shrink-0">🕊️</span>
+                    <div className="space-y-2">
+                      <p className="text-xs font-bold text-amber-950 dark:text-amber-200 leading-relaxed">
+                        Take a breath! Would you like to reframe this text using
+                        &lsquo;I feel&rsquo; statements instead of &lsquo;You
+                        always&rsquo; statements before sending?
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => {
-                            setTargetLanguage(
-                              liveDetectedLanguage.matchedLanguageOption
-                            );
-                            handleGenerate({
-                              langOverride:
-                                liveDetectedLanguage.matchedLanguageOption,
-                            });
-                          }}
-                          className="text-teal-700 font-semibold hover:underline cursor-pointer"
+                          onClick={handleReframeIFeelStatements}
+                          className="px-3 py-1.5 rounded-lg bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold cursor-pointer"
                         >
-                          Switch output to{" "}
-                          {liveDetectedLanguage.matchedLanguageOption} →
+                          ✨ Yes, Reframe with &ldquo;I Feel&rdquo; Statements
                         </button>
-                      )}
+                        <button
+                          type="button"
+                          onClick={() => setCoolOffDismissed(true)}
+                          className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-amber-300 text-xs font-semibold text-amber-900 dark:text-amber-200 cursor-pointer"
+                        >
+                          Keep My Draft
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <textarea
-                  id="rough-draft-textarea"
-                  rows={4}
-                  value={roughDraft}
-                  onChange={(e) => setRoughDraft(e.target.value)}
-                  placeholder={currentPersona.placeholderHint}
-                  className="w-full rounded-lg border border-slate-300 bg-slate-50/50 p-3.5 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-700 focus:outline-none transition-colors"
-                />
-              </div>
-            ) : (
-              /* Voice Note Input ("Rant-to-Email") Widget */
-              <div className="p-5 rounded-lg bg-slate-50 border border-slate-200 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">
-                      🎤 Record your explanation out loud (&ldquo;Rant-to-Email&rdquo;)
-                    </p>
-                    <p className="text-xs text-slate-600 mt-0.5">
-                      Speak freely or upload a voice note—Gemini multimodal audio will transcribe and rewrite it into a polished message.
-                    </p>
-                  </div>
+              )}
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    {!isRecordingAudio ? (
+              {/* Mode Switcher: Type Text vs Record Voice Note */}
+              <div className="flex items-center gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setInputMode("text")}
+                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                    inputMode === "text"
+                      ? "bg-teal-700 text-white border-teal-700"
+                      : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300"
+                  }`}
+                >
+                  ✍️ Type Rough Draft
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInputMode("voice")}
+                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                    inputMode === "voice"
+                      ? "bg-teal-700 text-white border-teal-700"
+                      : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300"
+                  }`}
+                >
+                  🎤 Record Voice Note (&ldquo;Rant-to-Email&rdquo;)
+                </button>
+              </div>
+
+              {inputMode === "voice" ? (
+                <div className="rounded-xl border-2 border-dashed border-teal-400 bg-teal-50/50 dark:bg-slate-800/60 p-6 text-center space-y-3">
+                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    {isRecording
+                      ? `🔴 Recording your voice rant (${recordingSeconds}s)... Speak naturally!`
+                      : "Tap below to vent or explain what happened out loud. We will transcribe and polish it automatically!"}
+                  </p>
+                  <div className="flex justify-center">
+                    {!isRecording ? (
                       <button
                         type="button"
-                        onClick={startAudioRecording}
-                        className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+                        onClick={startVoiceRecording}
+                        className="px-5 py-2.5 rounded-full bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold flex items-center gap-2 shadow-md cursor-pointer"
                       >
                         <Mic className="w-4 h-4" />
-                        <span>Start Recording</span>
+                        <span>Start Voice Recording</span>
                       </button>
                     ) : (
                       <button
                         type="button"
-                        onClick={stopAudioRecording}
-                        className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap animate-pulse cursor-pointer"
+                        onClick={stopVoiceRecording}
+                        className="px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-2 shadow-md animate-pulse cursor-pointer"
                       >
-                        <MicOff className="w-4 h-4 text-red-400" />
-                        <span>Stop &amp; Capture Audio</span>
+                        <MicOff className="w-4 h-4" />
+                        <span>Stop &amp; Polish My Voice Note</span>
                       </button>
                     )}
-
-                    <label className="px-3 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-medium flex items-center gap-1.5 whitespace-nowrap cursor-pointer">
-                      <Upload className="w-3.5 h-3.5 text-teal-700" />
-                      <span>Upload Audio Clip</span>
-                      <input
-                        type="file"
-                        accept="audio/*"
-                        onChange={handleAudioFileUpload}
-                        className="hidden"
-                      />
-                    </label>
-
-                    <button
-                      type="button"
-                      onClick={loadSampleRantAudioTranscript}
-                      className="px-3 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-medium whitespace-nowrap cursor-pointer"
-                    >
-                      Load Sample Car-Breakdown Rant
-                    </button>
                   </div>
                 </div>
-
-                {recordedAudioUrl && (
-                  <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold text-emerald-900">
-                        ✅ Audio captured! Ready to refine with Gemini multimodal audio.
-                      </p>
-                      <audio
-                        controls
-                        src={recordedAudioUrl}
-                        className="h-8 max-w-xs"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setRecordedAudioUrl(null);
-                        setRecordedAudioBase64("");
-                      }}
-                      className="text-xs text-red-700 hover:underline flex items-center gap-1 self-start sm:self-center cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Clear Audio</span>
-                    </button>
-                  </div>
-                )}
-
+              ) : (
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">
-                    Live Transcription / Accompanying Raw Notes:
-                  </label>
                   <textarea
-                    rows={2}
+                    rows={5}
                     value={roughDraft}
                     onChange={(e) => setRoughDraft(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs text-slate-900"
+                    placeholder={currentPersonaConfig.placeholderHint}
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 p-3.5 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* 4. "Red Flag Checker" Score Meter (Pre-Refinement Professionalism Score 0-100%) */}
-            <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-slate-900">
-                    🔍 Pre-Refinement &ldquo;Red Flag Checker&rdquo; Meter
-                  </span>
-                  <span className="text-xs text-slate-500">
-                    ({liveRawCheck.statusLabel})
-                  </span>
-                </div>
-                <div className="font-mono text-xs font-semibold text-slate-900 tabular-nums">
-                  Raw Professionalism Score:{" "}
-                  <span
-                    className={
-                      liveRawCheck.score < 55
-                        ? "text-red-700"
-                        : "text-amber-700"
-                    }
-                  >
-                    {liveRawCheck.score}%
-                  </span>{" "}
-                  · Casual/Stress Markers: {liveRawCheck.casualHits}
-                </div>
-              </div>
-              <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-200 ${
-                    liveRawCheck.score < 50
-                      ? "bg-red-600"
-                      : liveRawCheck.score < 75
-                      ? "bg-amber-500"
-                      : "bg-emerald-600"
-                  }`}
-                  style={{ width: `${liveRawCheck.score}%` }}
-                />
-              </div>
-            </div>
-
-            {/* 2. "OVERTHINKING SHIELD" (Overthinking Radar Text Analyzer) */}
-            <div className="p-4 rounded-xl bg-purple-50/70 border border-purple-200 space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-extrabold text-purple-950">
-                    🛡️ &ldquo;Overthinking Shield&rdquo; (Live Texting Trap Radar)
-                  </span>
-                </div>
-                <span className="text-[11px] font-mono font-bold text-purple-900">
-                  Word Count: {overthinkingRadar.wordCount} words · Pressure Meter:{" "}
-                  {overthinkingRadar.pressureScore}%
+              {/* Quick Preset Chips for Current Persona */}
+              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                <span className="text-[11px] font-bold text-slate-500">
+                  Quick Presets:
                 </span>
+                {currentPersonaConfig.presets.map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => {
+                      setRelationship(preset.relationship);
+                      setSituation(preset.situation);
+                      setCourseOrRefCode(preset.courseOrRef);
+                      setRoughDraft(preset.draft);
+                      handleGenerate({
+                        draftOverride: preset.draft,
+                        relationshipOverride: preset.relationship,
+                        situationOverride: preset.situation,
+                        courseOverride: preset.courseOrRef,
+                      });
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-[11px] font-semibold cursor-pointer"
+                  >
+                    {preset.buttonLabel}
+                  </button>
+                ))}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
-                {/* Trap 1: Clinginess / Over-explaining Warning */}
-                <div
-                  className={`p-3 rounded-lg border ${
-                    overthinkingRadar.isClingyOrLong
-                      ? "bg-amber-50 border-amber-300 text-amber-950"
-                      : "bg-white border-emerald-200 text-emerald-950"
-                  }`}
-                >
-                  <p className="font-bold mb-1">
-                    {overthinkingRadar.isClingyOrLong
-                      ? "⚠️ Clinginess / Over-Explaining"
-                      : "🟢 Clinginess / Length Check"}
+              {/* "OVERTHINKING SHIELD" LIVE TEXT ANALYZER */}
+              {!simpleViewMode && (
+                <div className="mt-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-teal-600" />
+                      Overthinking Shield (Live Text Radar)
+                    </span>
+                    <span className="text-[11px] font-semibold text-slate-500">
+                      {overthinkingMetrics.wordCount} words
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-700 dark:text-slate-300">
+                    {overthinkingMetrics.clingyMessage}
                   </p>
-                  <p className="text-[11px] leading-snug">
-                    {overthinkingRadar.clingyMessage}
-                  </p>
+
+                  <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                    {overthinkingMetrics.passiveAggressiveHits.length > 0 ? (
+                      <span className="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-900 font-bold border border-rose-300">
+                        ⚠️ Passive-Aggression Alert: Flagged &ldquo;
+                        {overthinkingMetrics.passiveAggressiveHits.join(", ")}
+                        &rdquo;
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300">
+                        🛡️ Passive-Aggression Radar: Clear
+                      </span>
+                    )}
+
+                    <span
+                      className={`px-2.5 py-1 rounded-lg font-semibold border ${
+                        overthinkingMetrics.pressureScore > 50
+                          ? "bg-amber-100 text-amber-900 border-amber-300"
+                          : "bg-sky-100 text-sky-900 border-sky-300"
+                      }`}
+                    >
+                      ⏱️ Reply Pressure Meter:{" "}
+                      {overthinkingMetrics.pressureScore > 50
+                        ? `High (${overthinkingMetrics.pressureScore}% — Demands Urgent Reply)`
+                        : "Low & Breathable"}
+                    </span>
+                  </div>
                 </div>
+              )}
 
-                {/* Trap 2: Passive-Aggression Alert */}
-                <div
-                  className={`p-3 rounded-lg border ${
-                    overthinkingRadar.passiveAggressiveHits.length > 0
-                      ? "bg-red-50 border-red-300 text-red-950"
-                      : "bg-white border-emerald-200 text-emerald-950"
-                  }`}
-                >
-                  <p className="font-bold mb-1">
-                    {overthinkingRadar.passiveAggressiveHits.length > 0
-                      ? "⚠️ Passive-Aggression Alert"
-                      : "🟢 Passive-Aggression Radar"}
-                  </p>
-                  <p className="text-[11px] leading-snug">
-                    {overthinkingRadar.passiveAggressiveHits.length > 0
-                      ? `Flagged: "${overthinkingRadar.passiveAggressiveHits.join(
-                          '", "'
-                        )}". Phrases like "Fine, whatever", "K.", or "I guess" sound cold—our polish replaces them with warm honesty.`
-                      : 'Clear! Zero cold phrases like "Fine, whatever", "K.", or "I guess" detected.'}
-                  </p>
-                </div>
-
-                {/* Trap 3: Pressure Meter */}
-                <div
-                  className={`p-3 rounded-lg border ${
-                    overthinkingRadar.pressureHits.length > 0
-                      ? "bg-amber-50 border-amber-300 text-amber-950"
-                      : "bg-white border-emerald-200 text-emerald-950"
-                  }`}
-                >
-                  <p className="font-bold mb-1">
-                    {overthinkingRadar.pressureHits.length > 0
-                      ? "⚠️ High Reply Pressure Detected"
-                      : "🟢 Breathing Room / Pressure Meter"}
-                  </p>
-                  <p className="text-[11px] leading-snug">
-                    {overthinkingRadar.pressureHits.length > 0
-                      ? `Detected urgent markers (${overthinkingRadar.pressureHits.join(
-                          ", "
-                        )}). Leaving room to breathe gets warmer replies.`
-                      : "Leaves warm breathing room without demanding an instant reply."}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Primary Generate Action Button */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-              <div className="text-xs text-slate-500">
-                Calibrating for{" "}
-                <strong className="text-slate-800">{toneStyle}</strong> tone on{" "}
-                <strong className="text-slate-800">{platform}</strong>
-              </div>
-
+              {/* GENERATE CTA BUTTON WITH KEYBOARD SHORTCUT BADGE */}
               <button
                 type="button"
-                disabled={isLoading}
-                onClick={() => {
-                  if (persona === "school_kids") {
-                    setKidStarsCount((c) => c + 2);
-                    setKidMascotBubble(
-                      "KAPOW! 🚀 You earned +2 Gold Stars for making a Super-Polite Hero Message! Check it out below! ⭐"
-                    );
-                  }
-                  triggerCelebration(preferredCelebration);
-                  handleGenerate();
-                }}
-                className={`px-6 py-2.5 font-semibold text-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer disabled:opacity-60 ${
+                disabled={isGenerating}
+                onClick={() => handleGenerate()}
+                className={`mt-4 w-full py-3.5 px-5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${
                   persona === "school_kids"
-                    ? "rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold border-3 border-slate-900 shadow-[4px_4px_0px_0px_#0f172a]"
-                    : "rounded-lg bg-teal-700 hover:bg-teal-800 text-white"
+                    ? "bg-pink-600 hover:bg-pink-700 border-3 border-slate-900 shadow-[4px_4px_0px_0px_#0f172a]"
+                    : "bg-teal-700 hover:bg-teal-800"
                 }`}
               >
-                {isLoading ? (
+                {isGenerating ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>
-                      {persona === "school_kids"
-                        ? "✨ Making Magic Words..."
-                        : "Refining & Scoring Draft..."}
-                    </span>
+                    <span>Polishing Your Message...</span>
                   </>
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
                     <span>
                       {persona === "school_kids"
-                        ? "🚀 Blast Off! Make My Super-Polite Message! (+2 ⭐)"
-                        : "Generate Polished Draft & Learn"}
+                        ? "🚀 Super-Polish My Message! (+1 Gold Star ⭐)"
+                        : "Generate Polished Draft & Coaching"}
                     </span>
+                    <kbd className="ml-1 px-2 py-0.5 text-[11px] font-mono bg-teal-900/70 text-teal-100 rounded border border-teal-400/40">
+                      Ctrl+↵
+                    </kbd>
                   </>
                 )}
               </button>
             </div>
+          </div>
 
-            {errorMsg && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-800">
-                {errorMsg}
+          {/* RIGHT COLUMN: STEP 3 (YOUR READY-TO-SEND MESSAGE, FORMATTER, SCORECARD & COACHING) */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* GAMIFIED ETIQUETTE SCORE METER & INSTANT FEEDBACK ACHIEVEMENT BADGES */}
+            <div
+              className={`rounded-2xl p-5 border shadow-xs ${
+                persona === "school_kids"
+                  ? "bg-white border-4 border-slate-900 shadow-[5px_5px_0px_0px_#0f172a]"
+                  : "bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800"
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>🏆 Gamified Etiquette Score Meter &amp; Badges</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Color-coded progress rings: Green = Safe, Yellow = Review,
+                    Red = Risky
+                  </p>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300">
+                  {analysis?.readiness_scorecard?.tone_warning_status ||
+                    "Safe to Send 🟢"}
+                </span>
               </div>
-            )}
-          </section>
 
-          {/* OUTPUT SECTION */}
-          {analysis && (
-            <div className="space-y-6">
-              {/* 1. GAMIFIED "ETIQUETTE SCORE METER" (Visual Progress Rings + Color-Coded Bars) & INSTANT FEEDBACK BADGES */}
-              <section
-                className={`bg-white/95 backdrop-blur-xs rounded-2xl p-5 space-y-5 ${
-                  persona === "school_kids"
-                    ? "border-4 border-slate-900 shadow-[6px_6px_0px_0px_#0f172a]"
-                    : "border-2 border-teal-600/70 shadow-2xs"
-                }`}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              {/* 3 Score Progress Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                {[
+                  {
+                    title: "Politeness Score",
+                    score: politenessScore,
+                    delta:
+                      analysis?.readiness_scorecard?.politeness_delta || "+50%",
+                  },
+                  {
+                    title: "Clarity Score",
+                    score: clarityScore,
+                    delta:
+                      analysis?.readiness_scorecard?.clarity_delta || "+34%",
+                  },
+                  {
+                    title: "Raw Draft Before Polish",
+                    score: rawScore,
+                    delta: "Before AI Polish",
+                  },
+                ].map((metric) => {
+                  const style = getScoreColorBadge(metric.score);
+                  return (
+                    <div
+                      key={metric.title}
+                      className={`rounded-xl border p-3 ${style.bg}`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold">{metric.title}</span>
+                        <span className="text-sm font-extrabold">
+                          {metric.score}/100
+                        </span>
+                      </div>
+                      <div className="w-full h-2.5 bg-white/80 rounded-full overflow-hidden border border-slate-300/60">
+                        <div
+                          className={`h-full ${style.bar} transition-all duration-500`}
+                          style={{ width: `${metric.score}%` }}
+                        />
+                      </div>
+                      <div className="mt-1.5 flex items-center justify-between text-[11px] font-semibold">
+                        <span>{style.label}</span>
+                        <span>{metric.delta}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Achievement Badges Row */}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+                  🎖️ Unlocked Communication Achievement Badges
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {achievementBadges.map((b) => (
+                    <div
+                      key={b.id}
+                      className={`p-2.5 rounded-xl border text-xs transition-all ${
+                        b.earned
+                          ? "bg-teal-50/90 dark:bg-slate-800 border-teal-300 dark:border-teal-700 text-teal-950 dark:text-teal-200"
+                          : "bg-slate-100/70 dark:bg-slate-800/40 border-slate-200 text-slate-400 opacity-60"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 font-extrabold">
+                        <span className="text-base">{b.icon}</span>
+                        <span className="truncate">{b.label}</span>
+                      </div>
+                      <p className="text-[10px] mt-0.5 text-slate-600 dark:text-slate-400">
+                        {b.desc}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* STEP 3 CARD: READY-TO-SEND MESSAGE + OUTPUT FORMAT SELECTOR + PDF / AUDIO / COPY */}
+            <div
+              className={`rounded-2xl p-5 border shadow-xs space-y-4 ${
+                persona === "school_kids"
+                  ? "bg-white border-4 border-slate-900 shadow-[5px_5px_0px_0px_#0f172a]"
+                  : "bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800"
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-7 h-7 rounded-full bg-teal-700 text-white text-xs font-extrabold flex items-center justify-center">
+                    3
+                  </span>
                   <div>
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-teal-800">
-                      🏅 Gamified Etiquette Scoreboard &amp; Instant Feedback Badges
-                    </span>
-                    <h3 className="font-display text-base sm:text-lg font-bold text-slate-900">
-                      Your Message Score Meter (Green = Safe · Yellow = Review · Red = Risky)
-                    </h3>
+                    <h2 className="font-bold text-base text-slate-900 dark:text-white">
+                      Step 3: Your Ready-to-Send {platform}
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Switch the layout format, listen out loud, copy, or export
+                      as a PDF document.
+                    </p>
                   </div>
+                </div>
+
+                {/* Top Quick Actions: Export PDF & Read Aloud Audio Player */}
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => triggerCelebration(preferredCelebration)}
-                    className="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-950 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                    onClick={downloadFormattedPdf}
+                    className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      exportedPdfSuccess
+                        ? "bg-emerald-600 text-white border-emerald-600"
+                        : "bg-teal-50 dark:bg-slate-800 hover:bg-teal-100 text-teal-900 dark:text-teal-200 border-teal-300"
+                    }`}
+                    title="Export polished message as a formatted PDF (Ctrl+Shift+E)"
                   >
-                    <span>🎈 Celebrate My Improvement!</span>
+                    {exportedPdfSuccess ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>PDF Exported!</span>
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-3.5 h-3.5 text-teal-700" />
+                        <span>📄 Export PDF</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      toggleReadAloud(
+                        `${
+                          platform === "Email" && analysis?.subject_line
+                            ? `Subject: ${analysis.subject_line}. `
+                            : ""
+                        }${displayedEmailBody}`
+                      )
+                    }
+                    className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      isSpeaking
+                        ? "bg-amber-500 text-slate-950 border-amber-600"
+                        : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 border-slate-300"
+                    }`}
+                    title="Listen to how your polished message sounds out loud (Alt+R)"
+                  >
+                    {isSpeaking ? (
+                      <>
+                        <VolumeX className="w-3.5 h-3.5" />
+                        <span>Stop Audio</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-3.5 h-3.5 text-teal-700" />
+                        <span>🔊 Read Aloud</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* OUTPUT TEXT FORMAT SELECTOR (6 Formats) */}
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                    📐 Choose Output Text Format:
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Instantly reformats your polished output below
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {OUTPUT_TEXT_FORMAT_OPTIONS.map((fmt) => (
+                    <button
+                      key={fmt.id}
+                      type="button"
+                      onClick={() => {
+                        setOutputTextFormat(fmt.id);
+                        setCustomEditedBody(null);
+                      }}
+                      className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                        outputTextFormat === fmt.id
+                          ? "bg-teal-700 text-white border-teal-700 shadow-2xs"
+                          : "bg-white dark:bg-slate-900 hover:bg-teal-50/50 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700"
+                      }`}
+                    >
+                      <p className="text-xs font-bold truncate">{fmt.label}</p>
+                      <p
+                        className={`text-[10px] truncate ${
+                          outputTextFormat === fmt.id
+                            ? "text-teal-100"
+                            : "text-slate-500"
+                        }`}
+                      >
+                        {fmt.shortDesc}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3 Tone Version Tabs (Warm & Respectful, Concise & Direct, Simple & Clear) */}
+              <div className="flex flex-wrap items-center gap-2">
+                {(
+                  [
+                    {
+                      id: "warm_respectful",
+                      label: "💛 Warm & Respectful (Recommended)",
+                    },
+                    { id: "concise_direct", label: "⚡ Concise & Short" },
+                    {
+                      id: "simple_clear",
+                      label: "📖 Super Simple (All Ages)",
+                    },
+                  ] as const
+                ).map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedVersionTab(tab.id);
+                      setCustomEditedBody(null);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      selectedVersionTab === tab.id
+                        ? "bg-teal-700 text-white border-teal-700"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Subject Line Options (when Email is selected) */}
+              {platform === "Email" &&
+                Array.isArray(analysis?.subject_lines) && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      📌 Recommended Subject Lines (Click to Copy):
+                    </p>
+                    <div className="space-y-1.5">
+                      {analysis.subject_lines.map(
+                        (subj: string, idx: number) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-teal-50/70 dark:bg-slate-800 border border-teal-200 dark:border-slate-700 text-xs"
+                          >
+                            <span className="font-mono font-semibold text-slate-900 dark:text-slate-100 truncate">
+                              {subj}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => copySubject(subj, idx)}
+                              className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 text-xs font-bold flex items-center gap-1 shrink-0 cursor-pointer"
+                            >
+                              {copiedSubjectIdx === idx ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span>Copied</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3.5 h-3.5" />
+                                  <span>Copy</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              {/* Editable Final Polished Message Box */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    ✏️ Polished Message (You can edit any word below before
+                    copying or exporting):
+                  </label>
+                  {customEditedBody !== null && (
+                    <button
+                      type="button"
+                      onClick={() => setCustomEditedBody(null)}
+                      className="text-[11px] font-semibold text-teal-700 underline cursor-pointer"
+                    >
+                      Reset edits
+                    </button>
+                  )}
+                </div>
+                <textarea
+                  rows={8}
+                  value={displayedEmailBody}
+                  onChange={(e) => setCustomEditedBody(e.target.value)}
+                  className="w-full rounded-xl border-2 border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-950 p-4 text-sm leading-relaxed font-medium focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+
+              {/* Main Output Action Bar: Copy, Export PDF, Download .TXT */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={copyMainOutput}
+                    className="px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    {copiedMain ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        <span>Copied Ready-to-Send Message!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>Copy Message</span>
+                        <kbd className="hidden sm:inline-block ml-1 px-1.5 py-0.5 text-[10px] font-mono bg-teal-900 text-teal-100 rounded">
+                          Ctrl+Shift+C
+                        </kbd>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={downloadFormattedPdf}
+                    className="px-3.5 py-2.5 rounded-xl border border-teal-300 dark:border-slate-700 bg-teal-50 dark:bg-slate-800 hover:bg-teal-100 text-teal-900 dark:text-teal-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <FileText className="w-4 h-4 text-teal-700" />
+                    <span>Export PDF</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      downloadTxtFile(
+                        "SayItRight_Message.txt",
+                        `${
+                          platform === "Email" && analysis?.subject_line
+                            ? `Subject: ${analysis.subject_line}\n\n`
+                            : ""
+                        }${displayedEmailBody}`
+                      )
+                    }
+                    className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download .TXT</span>
                   </button>
                 </div>
 
-                {/* Visual Progress Rings + Color-Coded Progress Bars */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Politeness Score Ring & Bar */}
-                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center gap-4">
-                    <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
-                      <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                        <circle
-                          cx="32"
-                          cy="32"
-                          r="26"
-                          fill="none"
-                          stroke="#E2E8F0"
-                          strokeWidth="6"
-                        />
-                        <circle
-                          cx="32"
-                          cy="32"
-                          r="26"
-                          fill="none"
-                          stroke={politenessMeta.ringStroke}
-                          strokeWidth="6"
-                          strokeDasharray={163.36}
-                          strokeDashoffset={
-                            163.36 - (163.36 * politenessVal) / 100
-                          }
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <span className="absolute font-mono text-xs font-extrabold text-slate-900">
-                        {politenessVal}/100
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0 space-y-1.5">
-                      <div className="flex items-center justify-between gap-1">
-                        <p className="text-xs font-bold text-slate-900">
-                          Politeness Score
-                        </p>
-                        <span className="text-[11px] font-mono font-bold text-emerald-700">
-                          ▲ {analysis.readiness_scorecard?.politeness_delta || "+48%"}
-                        </span>
-                      </div>
-                      <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${politenessMeta.barClass} transition-all duration-500`}
-                          style={{ width: `${politenessVal}%` }}
-                        />
-                      </div>
-                      <span
-                        className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${politenessMeta.badgeClass}`}
+                {/* Clickable Glossary Word Helper Pills */}
+                <div className="flex flex-wrap items-center gap-1">
+                  <span className="text-[11px] font-semibold text-slate-500">
+                    Explain word:
+                  </span>
+                  {Object.keys(SIMPLE_WORD_GLOSSARY)
+                    .slice(0, 4)
+                    .map((word) => (
+                      <button
+                        key={word}
+                        type="button"
+                        onClick={() => setExternalWordTrigger(word)}
+                        className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-teal-100 text-[11px] font-semibold text-teal-800 dark:text-teal-300 border border-slate-300 cursor-pointer"
                       >
-                        {politenessMeta.statusText}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Clarity Score Ring & Bar */}
-                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center gap-4">
-                    <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
-                      <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                        <circle
-                          cx="32"
-                          cy="32"
-                          r="26"
-                          fill="none"
-                          stroke="#E2E8F0"
-                          strokeWidth="6"
-                        />
-                        <circle
-                          cx="32"
-                          cy="32"
-                          r="26"
-                          fill="none"
-                          stroke={clarityMeta.ringStroke}
-                          strokeWidth="6"
-                          strokeDasharray={163.36}
-                          strokeDashoffset={
-                            163.36 - (163.36 * clarityVal) / 100
-                          }
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <span className="absolute font-mono text-xs font-extrabold text-slate-900">
-                        {clarityVal}/100
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0 space-y-1.5">
-                      <div className="flex items-center justify-between gap-1">
-                        <p className="text-xs font-bold text-slate-900">
-                          Clarity Score
-                        </p>
-                        <span className="text-[11px] font-mono font-bold text-emerald-700">
-                          ▲ {analysis.readiness_scorecard?.clarity_delta || "+32%"}
-                        </span>
-                      </div>
-                      <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${clarityMeta.barClass} transition-all duration-500`}
-                          style={{ width: `${clarityVal}%` }}
-                        />
-                      </div>
-                      <span
-                        className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${clarityMeta.badgeClass}`}
-                      >
-                        {clarityMeta.statusText}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Raw Draft Before vs After Meter */}
-                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center gap-4">
-                    <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
-                      <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                        <circle
-                          cx="32"
-                          cy="32"
-                          r="26"
-                          fill="none"
-                          stroke="#E2E8F0"
-                          strokeWidth="6"
-                        />
-                        <circle
-                          cx="32"
-                          cy="32"
-                          r="26"
-                          fill="none"
-                          stroke={rawScoreMeta.ringStroke}
-                          strokeWidth="6"
-                          strokeDasharray={163.36}
-                          strokeDashoffset={
-                            163.36 - (163.36 * liveRawCheck.score) / 100
-                          }
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <span className="absolute font-mono text-xs font-extrabold text-slate-900">
-                        {liveRawCheck.score}/100
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0 space-y-1.5">
-                      <div className="flex items-center justify-between gap-1">
-                        <p className="text-xs font-bold text-slate-900">
-                          Original Draft Score
-                        </p>
-                        <span className="text-[11px] font-semibold text-slate-500">
-                          Before Polish
-                        </span>
-                      </div>
-                      <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${rawScoreMeta.barClass} transition-all duration-500`}
-                          style={{ width: `${liveRawCheck.score}%` }}
-                        />
-                      </div>
-                      <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-900 border-emerald-300">
-                        Upgraded to {politenessVal}/100! 🚀
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Achievement Badges Row */}
-                <div className="pt-2 border-t border-slate-100 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800">
-                      🏆 Earned Achievement Badges on This Draft:
-                    </span>
-                    <span className="text-[11px] text-teal-800 font-semibold">
-                      {earnedBadges.length} Badges Unlocked!
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {earnedBadges.map((b) => (
-                      <div
-                        key={b.id}
-                        title={b.desc}
-                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-teal-300 text-teal-950 text-xs font-bold flex items-center gap-1.5 shadow-2xs"
-                      >
-                        <span className="text-sm">{b.icon}</span>
-                        <span>{b.label}</span>
-                      </div>
+                        {word}?
+                      </button>
                     ))}
-                  </div>
                 </div>
-              </section>
+              </div>
+            </div>
 
-              {/* 3. Dedicated "Subject Line Generator" Box (3 Catchy, Professional Subject Lines) */}
-              {platform === "Email" && subjectLinesList.length > 0 && (
-                <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-3">
-                  <div className="flex items-center justify-between">
+            {/* INTERACTIVE "BEFORE & AFTER" HIGHLIGHTING WITH HOVER/TAP EXPLANATION TOOLTIPS */}
+            {Array.isArray(analysis?.before_after_highlights) &&
+              analysis.before_after_highlights.length > 0 && (
+                <div className="rounded-2xl bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
-                        <Sparkles className="w-4 h-4 text-teal-700" />
-                        <span>
-                          Subject Line Generator (3 Catchy, Professional Options)
-                        </span>
+                      <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                        🔍 Interactive &ldquo;Before &amp; After&rdquo; Phrase
+                        Highlighting
                       </h3>
-                      <p className="text-xs text-slate-500">
-                        Professors get dozens of emails daily—click any option to copy a high-response subject line.
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Hover or tap any 🟢 Green upgraded phrase to see a
+                        pop-up explaining why the change makes your message
+                        stronger!
                       </p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {subjectLinesList.slice(0, 3).map((subj, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 flex flex-col justify-between gap-2.5"
-                      >
-                        <div>
-                          <span className="text-[11px] font-mono text-teal-800 font-semibold">
-                            Option 0{idx + 1}
-                          </span>
-                          <p className="text-xs font-mono font-medium text-slate-900 mt-1 break-words">
-                            {subj}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => copySubject(subj, idx)}
-                          className="self-start text-xs font-semibold text-teal-700 hover:text-teal-900 flex items-center gap-1 cursor-pointer"
-                        >
-                          {copiedSubjectIdx === idx ? (
-                            <>
-                              <Check className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>Copied Option {idx + 1}</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5" />
-                              <span>Copy Subject</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    ))}
+                  <div className="space-y-3">
+                    {analysis.before_after_highlights.map(
+                      (
+                        item: {
+                          original_red: string;
+                          polished_green: string;
+                          reason: string;
+                        },
+                        idx: number
+                      ) => {
+                        const isTooltipOpen = activeHighlightTooltip === idx;
+                        return (
+                          <div
+                            key={idx}
+                            onMouseEnter={() => setActiveHighlightTooltip(idx)}
+                            onClick={() =>
+                              setActiveHighlightTooltip(
+                                isTooltipOpen ? null : idx
+                              )
+                            }
+                            className="rounded-xl border border-slate-200 dark:border-slate-700 p-3.5 bg-slate-50/70 dark:bg-slate-800/60 transition-all cursor-pointer"
+                          >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {/* RED BEFORE */}
+                              <div className="rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5">
+                                <span className="inline-block text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-rose-200 text-rose-950 mb-1">
+                                  🔴 Before (Raw Draft)
+                                </span>
+                                <p className="text-xs text-rose-950 dark:text-rose-200 line-through">
+                                  {item.original_red}
+                                </p>
+                              </div>
+
+                              {/* GREEN AFTER */}
+                              <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 p-2.5 relative">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="inline-block text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-200 text-emerald-950">
+                                    🟢 After (Polished Upgrade)
+                                  </span>
+                                  <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 underline">
+                                    Why this works 💡
+                                  </span>
+                                </div>
+                                <p className="text-xs font-bold text-emerald-950 dark:text-emerald-100">
+                                  {item.polished_green}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Explanation Tooltip Banner */}
+                            {isTooltipOpen && (
+                              <div className="mt-2.5 rounded-lg bg-slate-900 text-white px-3 py-2 text-xs flex items-center gap-2">
+                                <span>💡</span>
+                                <span>
+                                  <strong>Coach Explanation:</strong>{" "}
+                                  {item.reason}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+                    )}
                   </div>
-                </section>
+                </div>
               )}
 
-              {/* 3 MAIN TABS (STEP 3: YOUR READY-TO-SEND MESSAGE) */}
-              <section
-                className={`bg-white overflow-hidden ${
-                  persona === "school_kids"
-                    ? "rounded-3xl border-4 border-slate-900 shadow-[6px_6px_0px_0px_#0f172a]"
-                    : "rounded-xl border-2 border-teal-700/80 shadow-xs"
-                }`}
-              >
-                <div
-                  className={`px-5 py-3.5 flex flex-wrap items-center justify-between gap-2 ${
-                    persona === "school_kids"
-                      ? "bg-gradient-to-r from-sky-400 via-amber-300 to-pink-300 text-slate-950 border-b-4 border-slate-900"
-                      : "bg-teal-900 text-white"
-                  }`}
-                >
-                  <div>
-                    <span
-                      className={`text-[11px] font-extrabold uppercase tracking-wider ${
-                        persona === "school_kids"
-                          ? "text-slate-950 bg-white/90 px-2.5 py-0.5 rounded-full border-2 border-slate-900"
-                          : "text-teal-200"
-                      }`}
-                    >
-                      {persona === "school_kids"
-                        ? "🏆 Step 3: Your Super-Hero Message is Ready!"
-                        : "✅ Step 3: Your Ready-to-Send Result"}
+            {/* INTERACTIVE RECIPIENT / PARTNER REACTION SIMULATOR */}
+            <div className="rounded-2xl bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <FlaskConical className="w-4 h-4 text-teal-600" />
+                    <span>
+                      Interactive Recipient &amp; Partner Reaction Simulator
                     </span>
-                    <h3
-                      className={`font-display text-base font-extrabold mt-1 ${
-                        persona === "school_kids"
-                          ? "text-slate-950"
-                          : "text-white"
-                      }`}
-                    >
-                      {persona === "school_kids"
-                        ? "🌟 Ready to Copy, Read Out Loud, or Change Format!"
-                        : `Polished ${
-                            platform === "Email" ? "Email" : "Message"
-                          } & Friendly Coaching`}
-                    </h3>
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Preview how your recipient or partner is likely to interpret
+                    and reply to your message before you hit send.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSimulateReaction}
+                  disabled={isSimulatingReaction}
+                  className="px-3 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <FlaskConical className="w-3.5 h-3.5" />
+                  <span>
+                    {isSimulatingReaction
+                      ? "Simulating..."
+                      : "🧪 Refresh Reaction Forecast"}
+                  </span>
+                </button>
+              </div>
+
+              {showReactionPanel && analysis?.professor_reactions && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-3">
+                    <p className="text-xs font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">
+                      🟢 Outcome A (Reassured / Likely Reply)
+                    </p>
+                    <p className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-200 mb-1.5">
+                      &ldquo;Felt heard, respected, and appreciated.&rdquo;
+                    </p>
+                    <p className="text-xs text-slate-800 dark:text-slate-200 italic">
+                      &ldquo;{analysis.professor_reactions.likely_reply}&rdquo;
+                    </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
+
+                  <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 p-3">
+                    <p className="text-xs font-extrabold text-amber-900 dark:text-amber-300 mb-1">
+                      🟡 Outcome B (Clarifying / Follow-Up)
+                    </p>
+                    <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-200 mb-1.5">
+                      &ldquo;Wants one extra detail or quick confirmation.&rdquo;
+                    </p>
+                    <p className="text-xs text-slate-800 dark:text-slate-200 italic">
+                      &ldquo;{analysis.professor_reactions.followup_question}
+                      &rdquo;
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-3">
+                    <p className="text-xs font-extrabold text-rose-900 dark:text-rose-300 mb-1">
+                      🔴 Outcome C (Guarded / Boundary)
+                    </p>
+                    <p className="text-[11px] font-semibold text-rose-800 dark:text-rose-200 mb-1.5">
+                      &ldquo;If sent raw without warm framing first:&rdquo;
+                    </p>
+                    <p className="text-xs text-slate-800 dark:text-slate-200 italic">
+                      &ldquo;{analysis.professor_reactions.worst_case_boundary}
+                      &rdquo;
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* QUICK "SAFETY CHECKLIST" BEFORE SENDING */}
+            <div className="rounded-2xl bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <CheckSquare className="w-4 h-4 text-teal-600" />
+                  <span>✅ Quick &ldquo;Safety Checklist&rdquo; Before Sending</span>
+                </h3>
+                <span className="text-xs font-semibold text-teal-700 dark:text-teal-300">
+                  {
+                    Object.values(safetyChecklist).filter(Boolean).length
+                  }
+                  /3 Checked
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {[
+                  {
+                    key: "replacedBrackets" as const,
+                    label:
+                      "Did you replace bracketed details like [Your Name] and [Course ID]?",
+                  },
+                  {
+                    key: "officialSenderEmail" as const,
+                    label:
+                      "Is your official school/university email (or right chat contact) selected as the sender?",
+                  },
+                  {
+                    key: "attachedDocuments" as const,
+                    label:
+                      "Did you attach any required documents (e.g., doctor's note, clinic receipt, or screenshot)?",
+                  },
+                ].map((item) => {
+                  const checked = safetyChecklist[item.key];
+                  return (
                     <button
-                      type="button"
-                      onClick={downloadFormattedPdf}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                        exportedPdfSuccess
-                          ? "bg-emerald-500 border-emerald-400 text-white"
-                          : persona === "school_kids"
-                          ? "bg-white border-2 border-slate-900 text-slate-950 hover:bg-amber-100 shadow-[2px_2px_0px_0px_#0f172a]"
-                          : "bg-white/15 border-white/30 text-white hover:bg-white/25"
-                      }`}
-                    >
-                      {exportedPdfSuccess ? (
-                        <>
-                          <Check className="w-3.5 h-3.5" />
-                          <span>PDF Saved!</span>
-                        </>
-                      ) : (
-                        <>
-                          <FileText className="w-3.5 h-3.5" />
-                          <span>📄 Export PDF</span>
-                        </>
-                      )}
-                    </button>
-                    <button
+                      key={item.key}
                       type="button"
                       onClick={() =>
-                        toggleReadAloud(
-                          `${
-                            platform === "Email"
-                              ? `Subject: ${analysis.subject_line}. `
-                              : ""
-                          }${displayedEmailBody}`
-                        )
+                        setSafetyChecklist((prev) => ({
+                          ...prev,
+                          [item.key]: !prev[item.key],
+                        }))
                       }
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                        isSpeaking
-                          ? "bg-amber-400 border-amber-300 text-slate-950"
-                          : "bg-teal-800 border-teal-600 text-white hover:bg-teal-700"
+                      className={`w-full text-left p-3 rounded-xl border flex items-center gap-3 transition-all cursor-pointer ${
+                        checked
+                          ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-950 dark:text-emerald-200"
+                          : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
                       }`}
                     >
-                      {isSpeaking ? (
-                        <>
-                          <VolumeX className="w-3.5 h-3.5" />
-                          <span>Stop Reading</span>
-                        </>
+                      {checked ? (
+                        <CheckSquare className="w-4 h-4 text-emerald-600 shrink-0" />
                       ) : (
-                        <>
-                          <Volume2 className="w-3.5 h-3.5" />
-                          <span>🔊 Read Message Aloud</span>
-                        </>
+                        <Square className="w-4 h-4 text-slate-400 shrink-0" />
                       )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="border-b border-slate-200 bg-slate-50 px-4 pt-2.5 flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-1 overflow-x-auto">
-                    <button
-                      type="button"
-                      onClick={() => setActiveOutputTab("tab1")}
-                      className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 cursor-pointer ${
-                        activeOutputTab === "tab1"
-                          ? "border-teal-700 text-teal-900 bg-white rounded-t-lg"
-                          : "border-transparent text-slate-600 hover:text-slate-900"
-                      }`}
-                    >
-                      <span>
-                        ✨ 1. Polished {platform === "Email" ? "Email" : "Message"}
+                      <span
+                        className={`text-xs font-semibold ${
+                          checked ? "line-through opacity-80" : ""
+                        }`}
+                      >
+                        {item.label}
                       </span>
                     </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setActiveOutputTab("tab2")}
-                      className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 cursor-pointer ${
-                        activeOutputTab === "tab2"
-                          ? "border-teal-700 text-teal-900 bg-white rounded-t-lg"
-                          : "border-transparent text-slate-600 hover:text-slate-900"
-                      }`}
-                    >
-                      <BookOpen className="w-4 h-4 text-teal-700" />
-                      <span>💡 2. Why This Works (Easy Lessons)</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setActiveOutputTab("tab3")}
-                      className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 cursor-pointer ${
-                        activeOutputTab === "tab3"
-                          ? "border-teal-700 text-teal-900 bg-white rounded-t-lg"
-                          : "border-transparent text-slate-600 hover:text-slate-900"
-                      }`}
-                    >
-                      <AlertTriangle className="w-4 h-4 text-amber-600" />
-                      <span>⚠️ 3. Tone Check &amp; Checklist</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* TAB 1: POLISHED EMAIL + DOWNLOAD (.TXT) + PROFESSOR SIMULATOR + BEFORE/AFTER COMPARISON */}
-                {activeOutputTab === "tab1" && (
-                  <div className="p-6 space-y-6">
-                    {/* Variant Selector + Action Bar (Copy Email & Download .txt & Predict Professor's Reaction) */}
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-                      <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg self-start">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedVariant("warm_respectful")}
-                          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer ${
-                            selectedVariant === "warm_respectful"
-                              ? "bg-white text-slate-900 shadow-xs"
-                              : "text-slate-600 hover:text-slate-900"
-                          }`}
-                        >
-                          {toneStyle} (Primary)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedVariant("concise_direct")}
-                          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer ${
-                            selectedVariant === "concise_direct"
-                              ? "bg-white text-slate-900 shadow-xs"
-                              : "text-slate-600 hover:text-slate-900"
-                          }`}
-                        >
-                          Short &amp; Punchy
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedVariant("simple_clear")}
-                          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer ${
-                            selectedVariant === "simple_clear"
-                              ? "bg-white text-slate-900 shadow-xs"
-                              : "text-slate-600 hover:text-slate-900"
-                          }`}
-                        >
-                          Plain-Language (Kids / Seniors)
-                        </button>
-                      </div>
-
-                      {/* One-Click Copy, Download .txt, and Predict Professor's Reaction Buttons */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (!isEditingOutput) {
-                              setCustomEditedOutput(displayedEmailBody);
-                              setIsEditingOutput(true);
-                            } else {
-                              setIsEditingOutput(false);
-                            }
-                          }}
-                          className={`px-3 py-2 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors whitespace-nowrap cursor-pointer ${
-                            isEditingOutput
-                              ? "bg-teal-700 border-teal-700 text-white"
-                              : "bg-white border-slate-300 hover:bg-slate-50 text-slate-800"
-                          }`}
-                        >
-                          <span>
-                            {isEditingOutput
-                              ? "✓ Done Editing Text"
-                              : "✏️ Edit Output Text"}
-                          </span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => copyBodyText(displayedEmailBody)}
-                          className="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors whitespace-nowrap cursor-pointer"
-                        >
-                          {copiedBody ? (
-                            <>
-                              <Check className="w-3.5 h-3.5 text-emerald-400" />
-                              <span>Copied to Clipboard!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5" />
-                              <span>
-                                Copy {platform === "Email" ? "Email" : "Message"}
-                              </span>
-                            </>
-                          )}
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={downloadFormattedPdf}
-                          className={`px-3.5 py-2 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors whitespace-nowrap cursor-pointer ${
-                            exportedPdfSuccess
-                              ? "bg-emerald-600 border-emerald-700 text-white"
-                              : "bg-teal-700 hover:bg-teal-800 border-teal-700 text-white shadow-2xs"
-                          }`}
-                        >
-                          {exportedPdfSuccess ? (
-                            <>
-                              <Check className="w-3.5 h-3.5 text-white" />
-                              <span>PDF Exported!</span>
-                            </>
-                          ) : (
-                            <>
-                              <FileText className="w-3.5 h-3.5" />
-                              <span>📄 Export PDF</span>
-                            </>
-                          )}
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            downloadTxtFile(
-                              "professor_email.txt",
-                              `${
-                                platform === "Email" &&
-                                outputTextFormat !== "formal_letter" &&
-                                outputTextFormat !== "template_placeholders"
-                                  ? `Subject: ${analysis.subject_line}\n\n`
-                                  : ""
-                              }${displayedEmailBody}`
-                            )
-                          }
-                          className="px-3.5 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors whitespace-nowrap cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5 text-teal-700" />
-                          <span>📥 Download (.txt)</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={handlePredictReaction}
-                          className="px-3.5 py-2 rounded-lg bg-teal-50 border border-teal-700 hover:bg-teal-100/70 text-teal-950 text-xs font-semibold flex items-center gap-1.5 transition-colors whitespace-nowrap cursor-pointer"
-                        >
-                          <FlaskConical className="w-3.5 h-3.5 text-teal-700" />
-                          <span>🧪 Predict Reaction</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* OUTPUT TEXT FORMAT SELECTOR BAR */}
-                    <div className="p-3.5 rounded-xl bg-teal-50/70 border border-teal-200 space-y-2">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-xs font-bold text-teal-950">
-                          📐 Change Output Text Format (Click any format below):
-                        </span>
-                        <span className="text-[11px] text-teal-800 font-medium">
-                          {
-                            OUTPUT_TEXT_FORMAT_OPTIONS.find(
-                              (f) => f.id === outputTextFormat
-                            )?.shortDesc
-                          }
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {OUTPUT_TEXT_FORMAT_OPTIONS.map((fmt) => (
-                          <button
-                            key={fmt.id}
-                            type="button"
-                            onClick={() => {
-                              setOutputTextFormat(fmt.id);
-                              setCustomEditedOutput(null);
-                            }}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                              outputTextFormat === fmt.id
-                                ? "bg-teal-700 border-teal-700 text-white shadow-2xs"
-                                : "bg-white border-teal-200 text-slate-800 hover:bg-teal-100/60"
-                            }`}
-                          >
-                            {fmt.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 5. "READ ALOUD" AUDIO PLAYER BAR (Accessibility Booster) */}
-                    <div className="p-3.5 rounded-xl bg-sky-50/90 border border-sky-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="space-y-0.5">
-                        <p className="text-xs font-bold text-sky-950 flex items-center gap-1.5">
-                          <Volume2 className="w-4 h-4 text-sky-700 shrink-0" />
-                          <span>
-                            🔊 &ldquo;Read Aloud&rdquo; Voice Preview Player (Accessibility Booster)
-                          </span>
-                        </p>
-                        <p className="text-[11px] text-sky-900">
-                          Hear how your polite sentence sounds out loud before hitting send—great for kids, seniors &amp; non-native speakers!
-                        </p>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2 shrink-0">
-                        <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-sky-200 text-[11px] font-semibold text-slate-700">
-                          <span>Speed:</span>
-                          {[
-                            { rate: 0.85, label: "0.85x Slow" },
-                            { rate: 0.98, label: "1x Normal" },
-                            { rate: 1.15, label: "1.15x Fast" },
-                          ].map((sp) => (
-                            <button
-                              key={sp.rate}
-                              type="button"
-                              onClick={() => setReadAloudSpeed(sp.rate)}
-                              className={`px-1.5 py-0.5 rounded cursor-pointer ${
-                                readAloudSpeed === sp.rate
-                                  ? "bg-sky-700 text-white"
-                                  : "hover:bg-sky-50 text-slate-700"
-                              }`}
-                            >
-                              {sp.label}
-                            </button>
-                          ))}
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            toggleReadAloud(
-                              `${
-                                platform === "Email"
-                                  ? `Subject: ${analysis.subject_line}. `
-                                  : ""
-                              }${displayedEmailBody}`
-                            )
-                          }
-                          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors flex items-center gap-1.5 cursor-pointer ${
-                            isSpeaking
-                              ? "bg-amber-400 border-amber-500 text-slate-950"
-                              : "bg-sky-700 hover:bg-sky-800 border-sky-700 text-white"
-                          }`}
-                        >
-                          {isSpeaking ? (
-                            <>
-                              <VolumeX className="w-3.5 h-3.5" />
-                              <span>Stop Voice Preview</span>
-                            </>
-                          ) : (
-                            <>
-                              <Volume2 className="w-3.5 h-3.5" />
-                              <span>▶️ Play Voice Preview</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Polished Output Text Box (View or Live Edit) */}
-                    {isEditingOutput ? (
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-teal-900">
-                            ✏️ Live Editor — customize any word or name before copying:
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setCustomEditedOutput(null);
-                              setIsEditingOutput(false);
-                            }}
-                            className="text-xs text-slate-500 hover:text-red-700 underline cursor-pointer"
-                          >
-                            Reset to AI Output
-                          </button>
-                        </div>
-                        <textarea
-                          rows={9}
-                          value={displayedEmailBody}
-                          onChange={(e) =>
-                            setCustomEditedOutput(e.target.value)
-                          }
-                          className="w-full p-4 rounded-lg bg-white border-2 border-teal-600 text-slate-900 leading-relaxed focus:outline-none"
-                        />
-                      </div>
-                    ) : (
-                      <div className="p-5 rounded-lg bg-slate-50 border border-slate-200 whitespace-pre-wrap leading-relaxed text-slate-900">
-                        {displayedEmailBody}
-                      </div>
-                    )}
-
-                    {/* 6. QUICK "SAFETY CHECKLIST" BEFORE SENDING (Interactive Toggle Checklist Below Final Draft) */}
-                    <div className="p-4 rounded-xl bg-emerald-50/70 border-2 border-emerald-300 space-y-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <h4 className="text-xs sm:text-sm font-extrabold text-emerald-950 flex items-center gap-1.5">
-                            <span>✅ Quick &ldquo;Safety Checklist&rdquo; Before Sending</span>
-                          </h4>
-                          <p className="text-[11px] text-emerald-900">
-                            Check off these 3 quick items before you hit send in your email or chat app:
-                          </p>
-                        </div>
-                        <span className="px-2.5 py-1 rounded-full bg-white border border-emerald-300 text-xs font-mono font-bold text-emerald-950">
-                          {completedSafetyCount}/3 Checked{" "}
-                          {completedSafetyCount === 3 ? "🎉 Ready!" : ""}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                        {[
-                          {
-                            key: "replacedBrackets" as const,
-                            label:
-                              "Did you replace bracketed details like [Your Name] and [Course ID]?",
-                          },
-                          {
-                            key: "officialEmailSelected" as const,
-                            label:
-                              "Is your official school/university email selected as the sender?",
-                          },
-                          {
-                            key: "attachedDocuments" as const,
-                            label:
-                              "Did you attach any required documents (e.g., doctor's note, receipt, or rubric)?",
-                          },
-                        ].map((chk) => {
-                          const checked = safetyChecklist[chk.key];
-                          return (
-                            <button
-                              key={chk.key}
-                              type="button"
-                              onClick={() => {
-                                setSafetyChecklist((prev) => {
-                                  const next = {
-                                    ...prev,
-                                    [chk.key]: !prev[chk.key],
-                                  };
-                                  if (
-                                    next.replacedBrackets &&
-                                    next.officialEmailSelected &&
-                                    next.attachedDocuments
-                                  ) {
-                                    triggerCelebration("balloons");
-                                  } else if (!prev[chk.key]) {
-                                    playAnxietyBusterChime();
-                                  }
-                                  return next;
-                                });
-                              }}
-                              className={`p-3 rounded-xl border text-left text-xs font-medium flex items-start gap-2.5 transition-all cursor-pointer ${
-                                checked
-                                  ? "bg-emerald-600 border-emerald-700 text-white shadow-2xs"
-                                  : "bg-white border-emerald-300 text-slate-800 hover:bg-emerald-100/60"
-                              }`}
-                            >
-                              {checked ? (
-                                <CheckSquare className="w-4 h-4 text-white shrink-0 mt-0.5" />
-                              ) : (
-                                <Square className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-                              )}
-                              <span className={checked ? "line-through" : ""}>
-                                {chk.label}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* 4. INTERACTIVE "PARTNER / RECIPIENT REACTION SIMULATOR" (Always Accessible + 3 Predicted Outcomes) */}
-                    <div className="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <h4 className="text-sm font-bold text-slate-900">
-                            💞 Interactive &ldquo;Partner &amp; Recipient Reaction Simulator&rdquo; (3 Predicted Outcomes)
-                          </h4>
-                          <p className="text-xs text-slate-600">
-                            How a <strong>{relationship}</strong> is likely to interpret your message based on length, warmth, and tone:
-                          </p>
-                        </div>
-                        {isSimulatingReaction && (
-                          <span className="text-xs text-teal-800 flex items-center gap-1">
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            Simulating...
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-                        <div className="p-4 rounded-xl bg-emerald-50/90 border border-emerald-300 space-y-1.5">
-                          <p className="text-xs font-extrabold text-emerald-950">
-                            🟢 Outcome A (Reassured)
-                          </p>
-                          <p className="text-[11px] font-semibold text-emerald-800">
-                            &ldquo;Felt heard and appreciated.&rdquo;
-                          </p>
-                          <p className="text-xs text-emerald-950 leading-relaxed italic pt-1 border-t border-emerald-200/70">
-                            &ldquo;
-                            {simulatedReactions?.likely_reply ||
-                              analysis.professor_reactions?.likely_reply}
-                            &rdquo;
-                          </p>
-                        </div>
-
-                        <div className="p-4 rounded-xl bg-amber-50/90 border border-amber-300 space-y-1.5">
-                          <p className="text-xs font-extrabold text-amber-950">
-                            🟡 Outcome B (Confused)
-                          </p>
-                          <p className="text-[11px] font-semibold text-amber-800">
-                            &ldquo;Might think you are upset if sentences are too short.&rdquo;
-                          </p>
-                          <p className="text-xs text-amber-950 leading-relaxed italic pt-1 border-t border-amber-200/70">
-                            &ldquo;
-                            {simulatedReactions?.followup_question ||
-                              analysis.professor_reactions?.followup_question}
-                            &rdquo;
-                          </p>
-                        </div>
-
-                        <div className="p-4 rounded-xl bg-red-50/90 border border-red-300 space-y-1.5">
-                          <p className="text-xs font-extrabold text-red-950">
-                            🔴 Outcome C (Defensive)
-                          </p>
-                          <p className="text-[11px] font-semibold text-red-800">
-                            &ldquo;Feels accused; consider opening with a warm statement first.&rdquo;
-                          </p>
-                          <p className="text-xs text-red-950 leading-relaxed italic pt-1 border-t border-red-200/70">
-                            &ldquo;
-                            {simulatedReactions?.worst_case_boundary ||
-                              analysis.professor_reactions
-                                ?.worst_case_boundary}
-                            &rdquo;
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3. Interactive "Before & After" Comparison Slider & 2-Column Diff */}
-                    <div className="border-t border-slate-200 pt-5 space-y-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div>
-                          <h4 className="text-sm font-semibold text-slate-900">
-                            🔄 Interactive &ldquo;Before &amp; After&rdquo; Transformation
-                          </h4>
-                          <p className="text-xs text-slate-500">
-                            Compare your raw thoughts side-by-side with the polished message and inspect specific phrase upgrades.
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg self-start">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setComparisonViewMode("side_by_side")
-                            }
-                            className={`px-2.5 py-1 text-xs font-medium rounded cursor-pointer ${
-                              comparisonViewMode === "side_by_side"
-                                ? "bg-white text-slate-900 shadow-xs"
-                                : "text-slate-600"
-                            }`}
-                          >
-                            2-Column Side-by-Side
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setComparisonViewMode("slider_split")
-                            }
-                            className={`px-2.5 py-1 text-xs font-medium rounded cursor-pointer ${
-                              comparisonViewMode === "slider_split"
-                                ? "bg-white text-slate-900 shadow-xs"
-                                : "text-slate-600"
-                            }`}
-                          >
-                            Interactive Balance Slider
-                          </button>
-                        </div>
-                      </div>
-
-                      {comparisonViewMode === "slider_split" && (
-                        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
-                          <div className="flex items-center justify-between text-xs font-medium">
-                            <span className="text-red-700">
-                              Original Draft ({100 - sliderPosition}% weight)
-                            </span>
-                            <span className="font-mono text-slate-600 tabular-nums">
-                              Drag Comparison Slider: {sliderPosition}%
-                            </span>
-                            <span className="text-emerald-700">
-                              Polished Version ({sliderPosition}% weight)
-                            </span>
-                          </div>
-                          <input
-                            type="range"
-                            min={15}
-                            max={85}
-                            value={sliderPosition}
-                            onChange={(e) =>
-                              setSliderPosition(Number(e.target.value))
-                            }
-                            className="w-full accent-teal-700 cursor-pointer"
-                          />
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div
-                          className="p-4 rounded-lg bg-red-50/50 border border-red-200 space-y-2 transition-opacity"
-                          style={{
-                            opacity:
-                              comparisonViewMode === "slider_split"
-                                ? Math.max(0.35, (100 - sliderPosition) / 60)
-                                : 1,
-                          }}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-red-800">
-                              Original Rough Draft (Before)
-                            </span>
-                            <span className="text-[11px] font-mono text-red-700">
-                              Score: {liveRawCheck.score}%
-                            </span>
-                          </div>
-                          <p className="text-xs text-red-950 whitespace-pre-wrap leading-relaxed">
-                            {analysis.transcribed_text || roughDraft}
-                          </p>
-                        </div>
-
-                        <div
-                          className="p-4 rounded-lg bg-emerald-50/50 border border-emerald-200 space-y-2 transition-opacity"
-                          style={{
-                            opacity:
-                              comparisonViewMode === "slider_split"
-                                ? Math.max(0.35, sliderPosition / 60)
-                                : 1,
-                          }}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-emerald-800">
-                              Polished Version (After)
-                            </span>
-                            <span className="text-[11px] font-mono text-emerald-700">
-                              Politeness:{" "}
-                              {analysis.readiness_scorecard?.politeness_score ??
-                                96}
-                              %
-                            </span>
-                          </div>
-                          <p className="text-xs text-emerald-950 whitespace-pre-wrap leading-relaxed">
-                            {displayedEmailBody}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* 4. INTERACTIVE "BEFORE & AFTER" HIGHLIGHTING WITH HOVER/TAP EXPLANATION TOOLTIPS */}
-                      {analysis.before_after_highlights?.length > 0 && (
-                        <div className="space-y-3 pt-2">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <p className="text-xs font-extrabold text-slate-900">
-                              🔍 Interactive &ldquo;Before &amp; After&rdquo; Phrase Badges (Hover or Tap Green Badge for Pop-Up Explanation!):
-                            </p>
-                            <span className="text-[11px] font-semibold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-                              💡 Hover or tap any 🟢 After phrase
-                            </span>
-                          </div>
-                          <div className="space-y-2.5">
-                            {analysis.before_after_highlights.map((item, i) => {
-                              const isTooltipOpen =
-                                activeHighlightTooltip === i;
-                              return (
-                                <div
-                                  key={i}
-                                  onMouseEnter={() =>
-                                    setActiveHighlightTooltip(i)
-                                  }
-                                  onClick={() =>
-                                    setActiveHighlightTooltip(
-                                      isTooltipOpen ? null : i
-                                    )
-                                  }
-                                  className="relative p-3.5 rounded-xl border border-slate-200 bg-white hover:border-emerald-500 transition-all text-xs space-y-2 shadow-2xs cursor-pointer"
-                                >
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 items-start">
-                                    <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-950">
-                                      <span className="font-extrabold text-red-800 block mb-0.5">
-                                        🔴 Before:
-                                      </span>
-                                      <span className="line-through opacity-90">
-                                        &ldquo;{item.original_red}&rdquo;
-                                      </span>
-                                    </div>
-
-                                    <div className="p-2.5 rounded-lg bg-emerald-50 border-2 border-emerald-400 text-emerald-950 relative group">
-                                      <div className="flex items-center justify-between mb-0.5">
-                                        <span className="font-extrabold text-emerald-800">
-                                          🟢 After (Hover/Tap for Why):
-                                        </span>
-                                        <span className="text-[10px] font-bold bg-emerald-200/80 text-emerald-950 px-1.5 py-0.5 rounded">
-                                          Why? 💡
-                                        </span>
-                                      </div>
-                                      <span className="font-semibold">
-                                        &ldquo;{item.polished_green}&rdquo;
-                                      </span>
-                                    </div>
-                                  </div>
-
-                                  {/* Hover / Tap Pop-Up Explanation Tooltip */}
-                                  {isTooltipOpen && (
-                                    <div className="p-2.5 rounded-lg bg-slate-900 text-white text-xs flex items-start gap-2 shadow-md">
-                                      <span className="text-amber-300 shrink-0">
-                                        💡 Why this change works:
-                                      </span>
-                                      <span className="text-slate-100">
-                                        {item.reason}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 2: WHY THIS WORKS (ETIQUETTE LESSONS) */}
-                {activeOutputTab === "tab2" && (
-                  <div className="p-6 space-y-6">
-                    <div className="border-b border-slate-100 pb-4">
-                      <h3 className="text-base font-semibold text-slate-900">
-                        Why This Works: Etiquette &amp; Psychology Breakdown
-                      </h3>
-                      <p className="text-xs text-slate-600 mt-0.5">
-                        Learn why specific changes were made so you build lasting confidence for future tough conversations.
-                      </p>
-                    </div>
-
-                    <div className="space-y-5">
-                      {analysis.etiquette_lessons?.map((lesson, index) => (
-                        <div
-                          key={index}
-                          className="p-5 rounded-lg border border-slate-200 bg-white space-y-4"
-                        >
-                          <h4 className="font-display text-base font-semibold text-slate-900">
-                            0{index + 1}. {lesson.principle}
-                          </h4>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="p-3.5 rounded-lg bg-red-50/60 border border-red-200">
-                              <p className="text-[11px] font-semibold text-red-800 mb-1">
-                                Original / Risky Phrasing:
-                              </p>
-                              <p className="text-xs text-red-950 italic">
-                                &ldquo;{lesson.before_snippet}&rdquo;
-                              </p>
-                            </div>
-
-                            <div className="p-3.5 rounded-lg bg-emerald-50/60 border border-emerald-200">
-                              <p className="text-[11px] font-semibold text-emerald-800 mb-1">
-                                Polished Framing:
-                              </p>
-                              <p className="text-xs text-emerald-950 font-medium">
-                                &ldquo;{lesson.after_snippet}&rdquo;
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="text-sm text-slate-700 leading-relaxed">
-                            <strong className="text-slate-900">
-                              Why it works:{" "}
-                            </strong>
-                            {lesson.why_it_works}
-                          </div>
-
-                          {lesson.simple_kid_friendly_tip && (
-                            <div className="pt-2 border-t border-slate-100 text-xs text-teal-900">
-                              <strong>
-                                Plain-Language Takeaway (For Kids, Seniors &amp; Quick Learning):{" "}
-                              </strong>
-                              {lesson.simple_kid_friendly_tip}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 3: TONE ANALYSIS & FLAGS */}
-                {activeOutputTab === "tab3" && (
-                  <div className="p-6 space-y-6">
-                    <div className="border-b border-slate-100 pb-4">
-                      <h3 className="text-base font-semibold text-slate-900">
-                        Tone Analysis &amp; Red Flags
-                      </h3>
-                      <p className="text-sm text-slate-700 mt-1">
-                        {analysis.tone_analysis?.overall_tone_summary}
-                      </p>
-                    </div>
-
-                    {analysis.tone_analysis?.apology_audit && (
-                      <div className="p-4 rounded-lg bg-teal-50/70 border border-teal-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="space-y-1">
-                          <p className="text-xs font-semibold text-teal-950">
-                            Self-Advocacy &amp; Apology Audit
-                          </p>
-                          <p className="text-xs text-teal-900">
-                            {analysis.tone_analysis.apology_audit.coaching_note}
-                          </p>
-                        </div>
-                        <div className="shrink-0 font-mono text-xs text-teal-950 bg-white px-3 py-1.5 rounded border border-teal-200 tabular-nums">
-                          Over-apologies removed:{" "}
-                          <strong>
-                            {
-                              analysis.tone_analysis.apology_audit
-                                .unnecessary_apologies_found
-                            }
-                          </strong>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-semibold text-slate-900">
-                        Detected Friction Points in Your Rough Draft
-                      </h4>
-                      {analysis.tone_analysis?.flags?.map((flag, i) => (
-                        <div
-                          key={i}
-                          className="p-4 rounded-lg border border-slate-200 bg-white space-y-2"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-slate-900">
-                              {flag.type}
-                            </span>
-                            <span className="text-xs font-mono text-amber-800">
-                              ▲ {flag.severity.toUpperCase()} PRIORITY
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-600">
-                            <strong className="text-slate-800">
-                              Flagged in rough draft:{" "}
-                            </strong>
-                            &ldquo;{flag.flagged_phrase}&rdquo;
-                          </p>
-                          <p className="text-xs text-slate-600">
-                            <strong className="text-slate-800">
-                              Why it could backfire:{" "}
-                            </strong>
-                            {flag.issue_explanation}
-                          </p>
-                          <p className="text-xs text-teal-900 font-medium">
-                            <strong>Suggested Fix: </strong>
-                            {flag.suggested_fix}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {analysis.tone_analysis?.missing_details_checklist?.length >
-                      0 && (
-                      <div className="border-t border-slate-200 pt-5">
-                        <h4 className="text-xs font-semibold text-slate-800 mb-2.5">
-                          Missing Details Checklist (Verify Before Sending):
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                          {analysis.tone_analysis.missing_details_checklist.map(
-                            (item, idx) => {
-                              const isChecked = !!checkedItems[idx];
-                              return (
-                                <button
-                                  key={idx}
-                                  type="button"
-                                  onClick={() =>
-                                    setCheckedItems((prev) => ({
-                                      ...prev,
-                                      [idx]: !prev[idx],
-                                    }))
-                                  }
-                                  className={`p-3 rounded-lg border text-left text-xs flex items-start gap-2.5 transition-colors cursor-pointer ${
-                                    isChecked
-                                      ? "bg-emerald-50/60 border-emerald-600 text-emerald-950 line-through opacity-80"
-                                      : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                                  }`}
-                                >
-                                  {isChecked ? (
-                                    <CheckSquare className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                                  ) : (
-                                    <Square className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                                  )}
-                                  <span>{item}</span>
-                                </button>
-                              );
-                            }
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </section>
+                  );
+                })}
+              </div>
             </div>
-          )}
-        </main>
-      </div>
+          </div>
+        </div>
+      </main>
 
-      {/* Cute Robo Figure AI Chatbot at Bottom-Right Corner for Clearing Doubts & Word Meanings */}
+      {/* CUTE ROBO CHATBOT ("BIBO") FLOATING HELPER */}
       <CuteRoboChatbot
         persona={persona}
         currentDraft={roughDraft}
         polishedEmail={displayedEmailBody}
-        externalWordTrigger={roboWordTrigger}
-        onClearExternalTrigger={() => setRoboWordTrigger(null)}
+        externalWordTrigger={externalWordTrigger}
+        onClearExternalTrigger={() => setExternalWordTrigger(null)}
       />
     </div>
   );
