@@ -1,6 +1,6 @@
 # 🚀 [Project Title / Say It Right]
 
-> [Short, catchy 1-2 sentence tagline describing what your app does and who it helps.]
+
 
 ---
 
