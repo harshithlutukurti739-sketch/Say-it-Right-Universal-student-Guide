@@ -1,0 +1,10 @@
+{
+  "name": "Say It Right: Universal & Student Email Coach",
+  "description": "Help people say hard things in the right way — featuring a college student-to-professor email coach plus dedicated communication modes for seniors, school kids, and women & self-advocacy.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

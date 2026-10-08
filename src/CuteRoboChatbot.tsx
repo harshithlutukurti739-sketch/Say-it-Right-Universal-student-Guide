@@ -1,0 +1,505 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Send,
+  X,
+  HelpCircle,
+  BookOpen,
+  Sparkles,
+  Volume2,
+  RefreshCw,
+} from "lucide-react";
+import {
+  buildRoboFallbackReply,
+  SIMPLE_WORD_GLOSSARY,
+} from "./fallbackData";
+
+interface ChatMessage {
+  id: string;
+  sender: "robo" | "user";
+  text: string;
+  wordBreakdown?: {
+    word: string;
+    simpleMeaning: string;
+    exampleUse: string;
+    kidAndSeniorTip: string;
+  };
+}
+
+interface CuteRoboChatbotProps {
+  persona: string;
+  currentDraft: string;
+  polishedEmail: string;
+  externalWordTrigger?: string | null;
+  onClearExternalTrigger?: () => void;
+}
+
+/**
+ * Custom SVG Cute Mini-Robot Character ("Bibo")
+ * Features glowing cyan eyes, a bobbing antenna bulb, friendly blushing cheeks,
+ * and a cheerful waving arm.
+ */
+export function CuteRoboAvatar({
+  size = "md",
+  isThinking = false,
+}: {
+  size?: "sm" | "md" | "lg";
+  isThinking?: boolean;
+}) {
+  const dimensions =
+    size === "lg" ? "w-14 h-14" : size === "md" ? "w-10 h-10" : "w-8 h-8";
+
+  return (
+    <div className={`relative ${dimensions} shrink-0 select-none`}>
+      <svg
+        viewBox="0 0 100 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full drop-shadow-sm"
+      >
+        {/* Antenna Stem */}
+        <line
+          x1="50"
+          y1="8"
+          x2="50"
+          y2="22"
+          stroke="#0F766E"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
+        {/* Glowing Antenna Bulb */}
+        <circle
+          cx="50"
+          cy="8"
+          r="6"
+          fill={isThinking ? "#F59E0B" : "#14B8A6"}
+        />
+        <circle cx="48" cy="6" r="2" fill="#CCFBF1" />
+
+        {/* Side Ear Bolts */}
+        <rect x="8" y="40" width="8" height="18" rx="4" fill="#0F766E" />
+        <rect x="84" y="40" width="8" height="18" rx="4" fill="#0F766E" />
+
+        {/* Robot Head Casing */}
+        <rect
+          x="15"
+          y="22"
+          width="70"
+          height="54"
+          rx="20"
+          fill="#F0FDFA"
+          stroke="#0F766E"
+          strokeWidth="4.5"
+        />
+
+        {/* Inner Dark Visor Screen */}
+        <rect x="23" y="31" width="54" height="32" rx="12" fill="#0F172A" />
+
+        {/* Cute Glowing Cyan Eyes */}
+        {isThinking ? (
+          <>
+            <circle cx="38" cy="46" r="5.5" fill="#38BDF8" />
+            <circle cx="62" cy="46" r="5.5" fill="#38BDF8" />
+            <circle cx="36" cy="44" r="2" fill="#FFFFFF" />
+            <circle cx="60" cy="44" r="2" fill="#FFFFFF" />
+          </>
+        ) : (
+          <>
+            {/* Happy curved/sparkling eyes */}
+            <circle cx="38" cy="45" r="6" fill="#2DD4BF" />
+            <circle cx="62" cy="45" r="6" fill="#2DD4BF" />
+            <circle cx="36" cy="43" r="2.2" fill="#FFFFFF" />
+            <circle cx="60" cy="43" r="2.2" fill="#FFFFFF" />
+          </>
+        )}
+
+        {/* Rosy Cheeks */}
+        <ellipse cx="29" cy="54" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.85" />
+        <ellipse cx="71" cy="54" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.85" />
+
+        {/* Cute Happy Smile on Visor */}
+        <path
+          d="M 43 53 Q 50 59 57 53"
+          stroke="#2DD4BF"
+          strokeWidth="3"
+          strokeLinecap="round"
+          fill="none"
+        />
+
+        {/* Robot Torso Peek */}
+        <path
+          d="M 30 76 L 70 76 L 74 94 L 26 94 Z"
+          fill="#CCFBF1"
+          stroke="#0F766E"
+          strokeWidth="4"
+          strokeLinejoin="round"
+        />
+        {/* Heart Badge on Chest */}
+        <circle cx="50" cy="85" r="5" fill="#14B8A6" />
+      </svg>
+    </div>
+  );
+}
+
+export default function CuteRoboChatbot({
+  persona,
+  currentDraft,
+  polishedEmail,
+  externalWordTrigger,
+  onClearExternalTrigger,
+}: CuteRoboChatbotProps) {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [inputVal, setInputVal] = useState<string>("");
+  const [isSending, setIsSending] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<"chat" | "dictionary">("chat");
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: "welcome-1",
+      sender: "robo",
+      text: "Beep-boop! Hi friend! I'm Bibo, your friendly robot helper! 🤖\n\nAsk me the meaning of any difficult word (like 'syllabus', 'rubric', 'mitigating', or 'extension') or any doubt you have about sending your message!",
+    },
+  ]);
+  const [suggestions, setSuggestions] = useState<string[]>([
+    "What does 'syllabus' mean?",
+    "What does 'rubric' mean?",
+    "Should I say 'sorry' in my email?",
+    "What if my professor is strict?",
+  ]);
+
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isOpen]);
+
+  // If the user clicked a difficult word chip in the main UI, open Bibo and explain it immediately
+  useEffect(() => {
+    if (externalWordTrigger) {
+      setIsOpen(true);
+      setActiveTab("chat");
+      handleSendQuestion(`What does "${externalWordTrigger}" mean in simple words?`);
+      if (onClearExternalTrigger) {
+        onClearExternalTrigger();
+      }
+    }
+  }, [externalWordTrigger]);
+
+  const handleSendQuestion = async (questionOverride?: string) => {
+    const query = (questionOverride !== undefined ? questionOverride : inputVal).trim();
+    if (!query) return;
+
+    if (questionOverride === undefined) {
+      setInputVal("");
+    }
+
+    const userMsg: ChatMessage = {
+      id: `u-${Date.now()}`,
+      sender: "user",
+      text: query,
+    };
+    setMessages((prev) => [...prev, userMsg]);
+    setIsSending(true);
+
+    const fallback = buildRoboFallbackReply(query);
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 9500);
+
+      const res = await fetch("/api/robo-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          userMessage: query,
+          persona,
+          currentDraft,
+          polishedEmail,
+        }),
+      });
+
+      clearTimeout(timeoutId);
+
+      let parsed: any = null;
+      if (res.ok) {
+        const raw = await res.text();
+        try {
+          parsed = JSON.parse(raw);
+        } catch (_e) {
+          parsed = null;
+        }
+      }
+
+      const finalData = parsed && parsed.reply ? parsed : fallback;
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `r-${Date.now()}`,
+          sender: "robo",
+          text: finalData.reply,
+          wordBreakdown: finalData.wordBreakdown,
+        },
+      ]);
+      if (
+        Array.isArray(finalData.suggestedFollowups) &&
+        finalData.suggestedFollowups.length > 0
+      ) {
+        setSuggestions(finalData.suggestedFollowups.slice(0, 4));
+      }
+    } catch (_err) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `r-${Date.now()}`,
+          sender: "robo",
+          text: fallback.reply,
+          wordBreakdown: fallback.wordBreakdown,
+        },
+      ]);
+      setSuggestions(fallback.suggestedFollowups);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const speakRoboText = (text: string) => {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const cleanText = text.replace(/[*#•_]/g, "");
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.pitch = 1.15;
+    utterance.rate = 0.98;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  return (
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end">
+      {/* Expanded Chat Window */}
+      {isOpen && (
+        <div className="mb-3 w-[350px] sm:w-[390px] bg-white rounded-2xl border-2 border-teal-700 shadow-xl overflow-hidden flex flex-col">
+          {/* Cute Robo Header */}
+          <div className="bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <CuteRoboAvatar size="md" isThinking={isSending} />
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-display text-sm font-bold text-white">
+                    Bibo the Word &amp; Doubt Buddy
+                  </h3>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                </div>
+                <p className="text-[11px] text-teal-200">
+                  Explains hard words &amp; clears email doubts simply!
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="p-1 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              aria-label="Close Bibo Robot Helper"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Mode Switcher inside Bibo: Ask Any Doubt vs. Easy Word Dictionary */}
+          <div className="grid grid-cols-2 bg-slate-100 p-1 border-b border-slate-200 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setActiveTab("chat")}
+              className={`py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                activeTab === "chat"
+                  ? "bg-white text-teal-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-teal-700" />
+              <span>Ask Bibo a Doubt</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("dictionary")}
+              className={`py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                activeTab === "dictionary"
+                  ? "bg-white text-teal-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-teal-700" />
+              <span>Hard Words Meanings</span>
+            </button>
+          </div>
+
+          {activeTab === "dictionary" ? (
+            /* Quick One-Tap Difficult Words Dictionary for Kids, Seniors & Students */
+            <div className="p-4 max-h-[380px] overflow-y-auto space-y-2.5 bg-slate-50">
+              <p className="text-xs text-slate-600 mb-2">
+                Tap any tricky word below to see what it means in plain, friendly language:
+              </p>
+              {Object.entries(SIMPLE_WORD_GLOSSARY).map(([word, details]) => (
+                <div
+                  key={word}
+                  className="p-3 rounded-xl bg-white border border-slate-200 space-y-1.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-bold text-teal-800 uppercase">
+                      {word}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        speakRoboText(`${word}. ${details.simpleMeaning}`)
+                      }
+                      className="text-[11px] text-slate-500 hover:text-teal-700 flex items-center gap-1 cursor-pointer"
+                      title="Listen to word meaning"
+                    >
+                      <Volume2 className="w-3.5 h-3.5" />
+                      <span>Listen</span>
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-800 leading-relaxed">
+                    <strong>Simple Meaning:</strong> {details.simpleMeaning}
+                  </p>
+                  <p className="text-[11px] text-teal-900 bg-teal-50/70 px-2.5 py-1.5 rounded-lg">
+                    💡 <strong>Tip:</strong> {details.kidAndSeniorTip}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* Interactive Chat Stream with Bibo */
+            <>
+              <div className="p-3.5 max-h-[310px] overflow-y-auto space-y-3 bg-slate-50">
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex items-start gap-2 ${
+                      msg.sender === "user" ? "flex-row-reverse" : "flex-row"
+                    }`}
+                  >
+                    {msg.sender === "robo" && <CuteRoboAvatar size="sm" />}
+                    <div
+                      className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                        msg.sender === "user"
+                          ? "bg-teal-700 text-white rounded-br-xs"
+                          : "bg-white border border-slate-200 text-slate-800 rounded-bl-xs shadow-2xs"
+                      }`}
+                    >
+                      <div className="whitespace-pre-wrap">{msg.text}</div>
+
+                      {msg.wordBreakdown && (
+                        <div className="mt-2 pt-2 border-t border-slate-100 space-y-1 text-[11px] bg-teal-50/60 p-2 rounded-lg text-teal-950">
+                          <p>
+                            <strong>Word:</strong>{" "}
+                            <span className="font-mono uppercase font-semibold">
+                              {msg.wordBreakdown.word}
+                            </span>
+                          </p>
+                          <p>
+                            <strong>Simple Meaning:</strong>{" "}
+                            {msg.wordBreakdown.simpleMeaning}
+                          </p>
+                          <p>
+                            <strong>Example:</strong>{" "}
+                            {msg.wordBreakdown.exampleUse}
+                          </p>
+                        </div>
+                      )}
+
+                      {msg.sender === "robo" && (
+                        <button
+                          type="button"
+                          onClick={() => speakRoboText(msg.text)}
+                          className="mt-1.5 text-[10px] font-medium text-teal-700 hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <Volume2 className="w-3 h-3" />
+                          <span>Read aloud</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {isSending && (
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <CuteRoboAvatar size="sm" isThinking />
+                    <span className="bg-white border border-slate-200 px-3 py-2 rounded-2xl flex items-center gap-1.5">
+                      <RefreshCw className="w-3 h-3 animate-spin text-teal-700" />
+                      <span>Bibo is thinking...</span>
+                    </span>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Quick Doubt & Word Chips */}
+              <div className="px-3 py-2 bg-white border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto">
+                {suggestions.map((sug, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleSendQuestion(sug)}
+                    className="px-2.5 py-1 rounded-full bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-900 text-[11px] font-medium whitespace-nowrap shrink-0 transition-colors cursor-pointer"
+                  >
+                    {sug}
+                  </button>
+                ))}
+              </div>
+
+              {/* Input Box */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendQuestion();
+                }}
+                className="p-2.5 bg-white border-t border-slate-200 flex items-center gap-2"
+              >
+                <input
+                  type="text"
+                  value={inputVal}
+                  onChange={(e) => setInputVal(e.target.value)}
+                  placeholder="Type a hard word or ask a doubt..."
+                  className="flex-1 text-xs rounded-xl border border-slate-300 px-3 py-2 text-slate-900 focus:border-teal-700 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={isSending || !inputVal.trim()}
+                  className="p-2 rounded-xl bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white transition-colors cursor-pointer"
+                  aria-label="Send question to Bibo"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Floating Cute Robo Launcher Button at Bottom-Right Corner */}
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="group flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-white pl-2.5 pr-4 py-2 rounded-full shadow-lg border-2 border-teal-500 transition-transform hover:scale-[1.02] cursor-pointer"
+      >
+        <CuteRoboAvatar size="md" isThinking={isSending} />
+        <div className="text-left">
+          <div className="flex items-center gap-1 text-xs font-bold text-white whitespace-nowrap">
+            <span>Ask Bibo Robo</span>
+            <Sparkles className="w-3.5 h-3.5 text-teal-300" />
+          </div>
+          <p className="text-[10px] text-teal-200 whitespace-nowrap">
+            Word Meanings &amp; Doubts
+          </p>
+        </div>
+      </button>
+    </div>
+  );
+}
